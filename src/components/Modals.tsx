@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { ref, onValue, push, set, query, orderByChild, limitToLast } from "firebase/database";
+import { db } from "../lib/firebase";
+import { filterProfanity } from "../lib/profanityFilter";
 
 interface ChatMessage {
   id: string;
@@ -65,25 +68,32 @@ export default function Modals() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [activeModal]);
 
-  // Fetch messages function
-  const fetchMessages = async () => {
-    try {
-      const res = await fetch("/api/chat");
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data.messages);
-      }
-    } catch (e) {
-      console.error("Failed to fetch messages", e);
-    }
-  };
-
-  // Poll for new messages when chat is open
+  // Listen for messages via Firebase Realtime Database
   useEffect(() => {
     if (activeModal === "chat") {
-      fetchMessages(); // Initial fetch
-      const intervalId = setInterval(fetchMessages, 3000); // Poll every 3 seconds
-      return () => clearInterval(intervalId);
+      // Query the last 100 messages ordered by timestamp
+      const messagesRef = query(
+        ref(db, 'chatMessages'),
+        orderByChild('timestamp'),
+        limitToLast(100)
+      );
+      
+      const unsubscribe = onValue(messagesRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // Convert the object map into an array and sort by timestamp
+          const messageList = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          })).sort((a, b) => a.timestamp - b.timestamp);
+          setMessages(messageList as ChatMessage[]);
+        } else {
+          setMessages([]);
+        }
+      });
+
+      // Cleanup listener when modal closes or component unmounts
+      return () => unsubscribe();
     }
   }, [activeModal]);
 
@@ -102,27 +112,21 @@ export default function Modals() {
     setIsLoading(true);
     
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: userName,
-          text: inputText
-        }),
+      const cleanText = filterProfanity(inputText.trim());
+      
+      const messagesRef = ref(db, 'chatMessages');
+      const newMessageRef = push(messagesRef);
+      
+      await set(newMessageRef, {
+        name: userName,
+        text: cleanText,
+        timestamp: Date.now()
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        // Profanity filter hit or other error
-        setErrorMsg(data.error || "Failed to send message.");
-      } else {
-        // Success
-        setInputText("");
-        setMessages((prev) => [...prev, data.message]);
-      }
+      setInputText("");
     } catch (e) {
-      setErrorMsg("Network error. Please try again.");
+      console.error(e);
+      setErrorMsg("Failed to send message.");
     } finally {
       setIsLoading(false);
     }
