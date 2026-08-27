@@ -6,9 +6,10 @@ import { TrackMeta } from '@/data/trackMap';
 interface CalligraphyCardProps {
   meta: TrackMeta | null;
   fallbackTitle?: string;
+  resolvedArabicName?: string;
 }
 
-export default function CalligraphyCard({ meta, fallbackTitle }: CalligraphyCardProps) {
+export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicName }: CalligraphyCardProps) {
   const [isVisible, setIsVisible] = React.useState(false);
 
   React.useEffect(() => {
@@ -34,10 +35,26 @@ export default function CalligraphyCard({ meta, fallbackTitle }: CalligraphyCard
       <div
         className={`flex flex-col items-center justify-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       >
-        <span className="font-hindi text-3xl text-amber-200/70 mb-3" aria-hidden="true">﷽</span>
-        <h2 className="font-hindi text-3xl sm:text-5xl text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
-          {fallbackTitle}
-        </h2>
+        <span className="font-hindi text-2xl text-amber-200/70 mb-8" aria-hidden="true">﷽</span>
+        
+        {resolvedArabicName ? (
+          <>
+            <h2 
+              className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-2" 
+              dir="rtl"
+            >
+              {resolvedArabicName}
+            </h2>
+            <p className="font-hindi text-lg sm:text-xl text-white/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
+              {fallbackTitle}
+            </p>
+          </>
+        ) : (
+          <h2 className="font-hindi text-3xl sm:text-5xl text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
+            {fallbackTitle}
+          </h2>
+        )}
+
         <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
           Playing Track
         </span>

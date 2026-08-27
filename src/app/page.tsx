@@ -153,7 +153,8 @@ export default function Home() {
   //      title (see src/lib/moodMatch.ts) — this is what makes the mood
   //      actually vary across all ~90+ tracks that aren't in TRACK_MAP yet,
   //      instead of everything falling back to one static "default" mood.
-  const autoMood: MoodKey = currentMeta?.mood ?? resolveMoodFromTitle(videoTitle).mood;
+  const resolved = resolveMoodFromTitle(videoTitle);
+  const autoMood: MoodKey = currentMeta?.mood ?? resolved.mood;
   const effectiveMood: MoodKey = manualMood ?? autoMood;
 
   return (
@@ -185,7 +186,11 @@ export default function Home() {
         <main className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-14 pb-2 xs:pb-3 sm:pt-20 sm:pb-6 px-3 sm:px-6 pointer-events-none">
           
           <div className="pointer-events-auto text-center mt-6 xs:mt-8 sm:mt-0 w-full flex-1 flex flex-col items-center justify-center">
-            <CalligraphyCard meta={currentMeta} fallbackTitle={videoTitle} />
+            <CalligraphyCard 
+              meta={currentMeta} 
+              fallbackTitle={videoTitle} 
+              resolvedArabicName={resolved.surah?.arabicName}
+            />
 
             <button
               type="button"
@@ -198,7 +203,7 @@ export default function Home() {
           </div>
 
           <div className="w-full max-w-md xs:max-w-lg sm:max-w-2xl flex flex-col items-center gap-2 sm:gap-3 mt-auto mb-1 sm:my-auto">
-            <div className="order-0 pointer-events-auto flex items-center justify-center gap-1.5 xs:gap-2 flex-nowrap max-w-full overflow-x-auto no-scrollbar py-1 px-1">
+            <div className="order-0 pointer-events-auto flex items-center justify-center gap-1.5 xs:gap-2 flex-wrap max-w-full py-1 px-1">
               <button
                 type="button"
                 className={`rain-toggle-pill group shrink-0 ${isRainActive ? "active" : ""}`}
@@ -240,7 +245,7 @@ export default function Home() {
               progress={progressPct}
               currentTime={currentTimeStr}
               totalTime={totalTimeStr}
-              trackName={currentMeta?.surahNameArabic || videoTitle || "Loading Surah..."}
+              trackName={currentMeta?.surahNameArabic || resolved.surah?.arabicName || videoTitle || "Loading Surah..."}
               channelName={"Sukoon Radio"}
               coverUrl={`https://img.youtube.com/vi/${currentVideoId}/hqdefault.jpg`}
               onPlayPause={handlePlayPause}
