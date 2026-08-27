@@ -386,7 +386,7 @@
 .font-hindi { font-family: var(--font-arabic), 'Amiri', 'serif'; }
 .font-display { font-family: 'Inter', sans-serif; }
 
-#rainCanvas {
+#atmosphereCanvas {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -396,7 +396,7 @@
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
 }
-#rainCanvas.active {
+#atmosphereCanvas.active {
   opacity: 1;
 }
 #lightningFlashOverlay {

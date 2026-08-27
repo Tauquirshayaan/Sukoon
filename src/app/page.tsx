@@ -12,8 +12,10 @@ import CalligraphyCard from '@/components/CalligraphyCard';
 import BackgroundVideo from '@/components/BackgroundVideo';
 import MoodCanvas from '@/components/MoodCanvas';
 import VibePicker from '@/components/VibePicker';
+import EffectPicker from '@/components/EffectPicker';
 import { resolveMoodFromTitle } from '@/lib/moodMatch';
 import { MoodKey } from '@/data/surahMoods';
+import { EffectKey, EFFECT_ICONS, resolveAutoEffect } from '@/data/effects';
 
 function formatTime(s: number) {
   if (!s || isNaN(s)) return '0:00';
@@ -33,6 +35,7 @@ export default function Home() {
   const [currentTimeStr, setCurrentTimeStr] = useState("0:00");
   const [totalTimeStr, setTotalTimeStr] = useState("0:00");
   const [manualMood, setManualMood] = useState<MoodKey | null>(null);
+  const [manualEffect, setManualEffect] = useState<EffectKey | null>(null);
 
   const playerRef = useRef<any>(null);
 
@@ -157,11 +160,19 @@ export default function Home() {
   const autoMood: MoodKey = currentMeta?.mood ?? resolved.mood;
   const effectiveMood: MoodKey = manualMood ?? autoMood;
 
+  // Atmosphere effect resolution mirrors the mood logic above: a manual
+  // pick from EffectPicker always wins, otherwise the effect follows
+  // whichever mood is currently showing (see src/data/effects.ts) so rain,
+  // wind, stars, or light rays actually match the background instead of
+  // rain being the only option regardless of vibe.
+  const autoEffect: EffectKey = resolveAutoEffect(effectiveMood);
+  const effectiveEffect: EffectKey = manualEffect ?? autoEffect;
+
   return (
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
       <BackgroundVideo mood={effectiveMood} />
       <MoodCanvas mood={effectiveMood} />
-      <AtmosphereCanvas isActive={isRainActive} />
+      <AtmosphereCanvas isActive={isRainActive} effect={effectiveEffect} />
       
       {/* Landing Overlay */}
       <div 
@@ -210,10 +221,12 @@ export default function Home() {
                 onClick={() => setIsRainActive(!isRainActive)}
               >
                 <span className="text-sm transition-transform group-hover:scale-125" aria-hidden="true">
-                  {isRainActive ? "⚡" : "🌧️"}
+                  {EFFECT_ICONS[effectiveEffect]}
                 </span>
                 <span className="font-medium tracking-wide">Atmosphere</span>
               </button>
+
+              <EffectPicker manualEffect={manualEffect} autoEffect={autoEffect} onChange={setManualEffect} />
 
               <button
                 type="button"
