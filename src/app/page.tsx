@@ -210,8 +210,10 @@ export default function Home() {
       <div className={`transition-opacity duration-1000 ${hasStarted ? 'opacity-100' : 'opacity-0'}`}>
         <Header />
 
-        <main className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-12 pb-2 sm:pt-20 sm:pb-6 px-3 sm:px-6 pointer-events-none">
-          
+        <main 
+          className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-12 sm:pt-20 px-3 sm:px-6 pointer-events-none"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 36px)' }}
+        >          
           <div className="pointer-events-auto text-center mt-4 sm:mt-0 w-full flex-1 flex flex-col items-center justify-center min-h-0">
             <CalligraphyCard
               meta={currentMeta}
