@@ -21,7 +21,7 @@ const FLOWER_NAMES = [
 ];
 
 export default function Modals() {
-  const [activeModal, setActiveModal] = useState<"support" | "chat" | "about" | "faq" | null>(null);
+  const [activeModal, setActiveModal] = useState<"support" | "chat" | null>(null);
   
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -43,23 +43,21 @@ export default function Modals() {
       storedName = `${flower} ${suffix}`;
       localStorage.setItem('sukoon_chat_name', storedName);
     }
+    // localStorage is only available client-side, so this can't be computed
+    // during render without risking a server/client hydration mismatch —
+    // setting it here, once, on mount is the correct pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserName(storedName);
 
     const handleOpenSupport = () => setActiveModal("support");
     const handleOpenChat = () => setActiveModal("chat");
-    const handleOpenAbout = () => setActiveModal("about");
-    const handleOpenFaq = () => setActiveModal("faq");
-    
+
     window.addEventListener("open-support-modal", handleOpenSupport);
     window.addEventListener("open-chat-modal", handleOpenChat);
-    window.addEventListener("open-about-modal", handleOpenAbout);
-    window.addEventListener("open-faq-modal", handleOpenFaq);
 
     return () => {
       window.removeEventListener("open-support-modal", handleOpenSupport);
       window.removeEventListener("open-chat-modal", handleOpenChat);
-      window.removeEventListener("open-about-modal", handleOpenAbout);
-      window.removeEventListener("open-faq-modal", handleOpenFaq);
     };
   }, []);
 
@@ -169,7 +167,7 @@ export default function Modals() {
 
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Support Sukoon</h2>
             <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-5 max-w-md mx-auto">
-              Sukoon is a free ambient radio to help you find peace. We promise to never put ads on this platform. If you'd like to support the hosting costs, please consider donating.
+              Sukoon is a free ambient radio to help you find peace. We promise to never put ads on this platform. If you&apos;d like to support the hosting costs, please consider donating.
             </p>
 
             <button
@@ -179,83 +177,6 @@ export default function Modals() {
             >
               Dismiss
             </button>
-          </div>
-        </div>
-      )}
-
-      {activeModal === "about" && (
-        <div className="app-modal open" role="dialog" aria-modal="true" onClick={() => setActiveModal(null)}>
-          <div className="app-modal-card text-left" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Close"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white text-xl flex items-center justify-center transition-colors"
-              onClick={() => setActiveModal(null)}
-            >
-              &times;
-            </button>
-
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">About Sukoon</h2>
-            <div className="space-y-4">
-              <p className="text-white/80 text-sm leading-relaxed text-center px-2">
-                Sukoon is a carefully curated ambient radio experience designed to help you find peace and tranquility. We blend beautiful recitations of the Quran with soothing atmospheric sounds like rain and gentle waves.
-              </p>
-              <p className="text-white/80 text-sm leading-relaxed text-center px-2">
-                Our mission is to create a frictionless, zero-distraction environment where you can listen, reflect, and relax without interruptions or advertisements.
-              </p>
-            </div>
-
-            <div className="mt-8 text-center">
-              <button
-                type="button"
-                className="text-xs text-white/50 hover:text-white underline"
-                onClick={() => setActiveModal(null)}
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeModal === "faq" && (
-        <div className="app-modal open" role="dialog" aria-modal="true" onClick={() => setActiveModal(null)}>
-          <div className="app-modal-card text-left" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Close"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white text-xl flex items-center justify-center transition-colors"
-              onClick={() => setActiveModal(null)}
-            >
-              &times;
-            </button>
-
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Frequently Asked Questions</h2>
-            
-            <div className="space-y-5 px-2">
-              <div>
-                <h3 className="text-white font-bold text-sm mb-1">Is Sukoon free to use?</h3>
-                <p className="text-white/70 text-xs leading-relaxed">Yes, Sukoon is entirely free. There are no ads, subscriptions, or hidden fees.</p>
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-sm mb-1">How does the background atmosphere work?</h3>
-                <p className="text-white/70 text-xs leading-relaxed">You can toggle ambient sounds (like rain or lightning) using the Atmosphere button at the bottom. It overlays naturally with the recitations.</p>
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-sm mb-1">Can I request a specific Surah?</h3>
-                <p className="text-white/70 text-xs leading-relaxed">Currently, the radio plays from a curated selection of calming recitations. You can use the Shuffle button to jump to a random track.</p>
-              </div>
-            </div>
-
-            <div className="mt-8 text-center">
-              <button
-                type="button"
-                className="text-xs text-white/50 hover:text-white underline"
-                onClick={() => setActiveModal(null)}
-              >
-                Dismiss
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -48,6 +48,33 @@ export default function VintagePlayer({
     onSeek(pct);
   };
 
+  const handleProgressBarKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = 0.05;
+    const currentPct = progress / 100;
+    switch (e.key) {
+      case "ArrowLeft":
+      case "ArrowDown":
+        e.preventDefault();
+        onSeek(Math.max(0, currentPct - step));
+        break;
+      case "ArrowRight":
+      case "ArrowUp":
+        e.preventDefault();
+        onSeek(Math.min(1, currentPct + step));
+        break;
+      case "Home":
+        e.preventDefault();
+        onSeek(0);
+        break;
+      case "End":
+        e.preventDefault();
+        onSeek(1);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     setVolume(val);
@@ -116,6 +143,7 @@ export default function VintagePlayer({
             tabIndex={0}
             onClick={handleProgressBarClick}
             onTouchStart={handleProgressBarTouch}
+            onKeyDown={handleProgressBarKeyDown}
           >
             <div
               className="h-full bg-white rounded-full transition-all duration-200 ease-linear"

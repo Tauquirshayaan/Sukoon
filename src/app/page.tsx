@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { YouTubeEvent } from 'react-youtube';
 import YouTubePlayer from '@/components/YouTubePlayer';
+import { YTPlayer } from '@/types/youtube';
 import AtmosphereCanvas from '@/components/AtmosphereCanvas';
 import Header from '@/components/Header';
 import VintagePlayer from '@/components/VintagePlayer';
@@ -14,6 +16,8 @@ import MoodCanvas from '@/components/MoodCanvas';
 import VibePicker from '@/components/VibePicker';
 import EffectPicker from '@/components/EffectPicker';
 import FocusPanel from '@/components/FocusPanel';
+import AboutSection from '@/components/AboutSection';
+import FAQSection from '@/components/FAQSection';
 import { resolveMoodFromTitle } from '@/lib/moodMatch';
 import { MoodKey, SURAH_MOODS } from '@/data/surahMoods';
 import { EffectKey, resolveAutoEffect } from '@/data/effects';
@@ -40,7 +44,7 @@ export default function Home() {
   const [manualEffect, setManualEffect] = useState<EffectKey | null>(null);
   const [isFocusOpen, setIsFocusOpen] = useState(false);
 
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YTPlayer | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -59,14 +63,14 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePlayerReady = (player: any) => {
+  const handlePlayerReady = (player: YTPlayer) => {
     playerRef.current = player;
     setIsReady(true);
     const data = player.getVideoData();
     if (data && data.title) setVideoTitle(data.title);
   };
 
-  const handleStateChange = (event: any) => {
+  const handleStateChange = (event: YouTubeEvent<number>) => {
     if (event.data === 1) {
       setIsPlaying(true);
     } else if (event.data === 2) {
@@ -90,7 +94,7 @@ export default function Home() {
     }
   };
 
-  const handleError = (event: any) => {
+  const handleError = (event: YouTubeEvent<number>) => {
     console.error("YouTube Player Error:", event.data);
     if (playerRef.current) {
       playerRef.current.nextVideo();
@@ -192,6 +196,7 @@ export default function Home() {
   const famousVerses = getFamousVersesForSurah(activeSurahNumber);
 
   return (
+    <>
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
       <BackgroundVideo mood={effectiveMood} />
       <MoodCanvas mood={effectiveMood} />
@@ -291,10 +296,28 @@ export default function Home() {
               onVolumeChange={handleVolumeChange}
             />
 
-            <footer className="order-3 sm:order-3 pointer-events-auto text-[8.5px] sm:text-xs text-white/40 tracking-widest mt-0 sm:mt-1 flex items-center justify-center gap-1">
-              designed &amp; developed with
-              <span className="text-rose-400 animate-pulse" aria-label="love">♥</span>
-            </footer>
+            {hasStarted && (
+              <button
+                type="button"
+                onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+                className="scroll-hint-pop pointer-events-auto flex flex-col items-center gap-1.5 mt-3 sm:mt-4 text-white/35 hover:text-white/60 transition-colors"
+                aria-label="Scroll down to learn more about Sukoon"
+              >
+                <span className="text-[8px] sm:text-[9px] font-mono tracking-[0.3em] uppercase">Scroll</span>
+                <svg
+                  className="scroll-hint-arrow w-2 h-2 sm:w-2.5 sm:h-2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 9l7 7 7-7" />
+                </svg>
+              </button>
+            )}
           </div>
         </main>
       </div>
@@ -312,10 +335,30 @@ export default function Home() {
       />
 
       <YouTubePlayer
-        onReady={handlePlayerReady} 
+        onReady={handlePlayerReady}
         onStateChange={handleStateChange}
         onError={handleError}
       />
     </section>
+
+    <AboutSection />
+    <FAQSection />
+
+    <footer className="w-full bg-[#0d0503] border-t border-white/10 px-4 sm:px-6 py-8 text-center">
+      <p className="text-white/40 text-[10px] sm:text-xs tracking-widest flex items-center justify-center gap-1 flex-wrap">
+        <span>designed &amp; developed with</span>
+        <span className="text-rose-400 animate-pulse" aria-label="love">♥</span>
+        <span>by</span>
+        <a
+          href="https://cenovabuild.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-300 hover:text-amber-200 underline underline-offset-2"
+        >
+          Cenovabuild
+        </a>
+      </p>
+    </footer>
+    </>
   );
 }

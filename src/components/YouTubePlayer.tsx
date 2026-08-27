@@ -3,11 +3,12 @@
 import React from 'react';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { RECITER_PLAYLIST_ID } from '@/lib/constants';
+import { YTPlayer } from '@/types/youtube';
 
 interface YouTubePlayerProps {
-  onReady: (player: any) => void;
-  onStateChange: (event: any) => void;
-  onError: (event: any) => void;
+  onReady: (player: YTPlayer) => void;
+  onStateChange: YouTubeProps['onStateChange'];
+  onError: YouTubeProps['onError'];
 }
 
 export default function YouTubePlayer({ onReady, onStateChange, onError }: YouTubePlayerProps) {
@@ -27,8 +28,10 @@ export default function YouTubePlayer({ onReady, onStateChange, onError }: YouTu
   };
 
   const handleReady: YouTubeProps['onReady'] = (event) => {
-    // Return the player instance to the parent
-    onReady(event.target);
+    // event.target's declared type comes from the untyped `youtube-player`
+    // package (see src/types/youtube.ts) — this is the one boundary cast
+    // to our own typed interface.
+    onReady(event.target as unknown as YTPlayer);
   };
 
   return (

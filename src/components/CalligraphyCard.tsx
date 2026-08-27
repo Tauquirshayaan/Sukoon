@@ -1,6 +1,5 @@
 "use client";
 
-import React from 'react';
 import { TrackMeta } from '@/data/trackMap';
 
 interface CalligraphyCardProps {
@@ -11,13 +10,10 @@ interface CalligraphyCardProps {
 }
 
 export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicName, onOpenFocus }: CalligraphyCardProps) {
-  const [isVisible, setIsVisible] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsVisible(false);
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
-  }, [meta, fallbackTitle]);
+  // Keying the card by track identity re-mounts it on every track change,
+  // which re-triggers the CSS fade-in animation below — no effect/setState
+  // needed to fake a "just changed" transition.
+  const trackKey = meta?.videoId ?? fallbackTitle ?? 'loading';
 
   if (!meta) {
     if (!fallbackTitle) {
@@ -37,7 +33,8 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
         type="button"
         onClick={onOpenFocus}
         aria-label="Show verse context"
-        className={`group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        className="calligraphy-fade-in group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer"
+        key={trackKey}
       >
         <span className="font-hindi text-2xl text-amber-200/70 mb-8" aria-label="Bismillah ir-Rahman ir-Rahim">﷽</span>
 
@@ -71,8 +68,8 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
       type="button"
       onClick={onOpenFocus}
       aria-label="Show verse context"
-      className={`group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-      key={meta.videoId}
+      className="calligraphy-fade-in group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer"
+      key={trackKey}
     >
       <h2
         className="font-hindi text-5xl xs:text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-3"

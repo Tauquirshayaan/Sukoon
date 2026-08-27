@@ -1,0 +1,35 @@
+{
+  "rules": {
+    "chatMessages": {
+      ".read": true,
+      ".indexOn": "timestamp",
+      "$messageId": {
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['name', 'text', 'timestamp'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "text": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() <= now && newData.val() > (now - 300000)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "presence": {
+      ".read": true,
+      "$connectionId": {
+        ".write": true,
+        ".validate": "newData.isBoolean() && newData.val() === true"
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

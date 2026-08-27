@@ -1,22 +1,41 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { ref, onValue, set, push, remove, onDisconnect } from "firebase/database";
+import { db } from "@/lib/firebase";
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+}
 
 export default function Header() {
-  const [onlineCount, setOnlineCount] = useState(1050);
+  const [onlineCount, setOnlineCount] = useState(0);
 
+  // Real presence count via Firebase RTDB: each open tab claims a
+  // `presence/{connectionId}` entry while `.info/connected` is true, and
+  // Firebase's own onDisconnect hook removes it the moment the socket
+  // drops (tab close, network loss, refresh) — no server code required.
   useEffect(() => {
-    setOnlineCount(Math.floor(Math.random() * 200) + 950);
-    const interval = setInterval(() => {
-      setOnlineCount((prev) => {
-        const isIncrease = Math.random() > 0.4;
-        const fluctuate = Math.floor(Math.random() * 7) + 1;
-        let newCount = isIncrease ? prev + fluctuate : prev - fluctuate;
-        if (newCount < 800) newCount = 800 + fluctuate;
-        return newCount;
-      });
-    }, 4500);
-    return () => clearInterval(interval);
+    const presenceListRef = ref(db, "presence");
+    const myPresenceRef = push(presenceListRef);
+    const connectedRef = ref(db, ".info/connected");
+
+    const unsubscribeConnected = onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        onDisconnect(myPresenceRef).remove();
+        set(myPresenceRef, true);
+      }
+    });
+
+    const unsubscribeCount = onValue(presenceListRef, (snap) => {
+      setOnlineCount(snap.exists() ? Object.keys(snap.val()).length : 0);
+    });
+
+    return () => {
+      unsubscribeConnected();
+      unsubscribeCount();
+      remove(myPresenceRef);
+    };
   }, []);
 
   return (
@@ -32,17 +51,17 @@ export default function Header() {
 
         {/* 3. Right side: About, FAQ, Support */}
         <nav aria-label="Primary" className="flex items-center gap-1.5 xs:gap-2 flex-1 sm:flex-initial justify-end shrink-0">
-          <button 
-            type="button" 
-            onClick={() => window.dispatchEvent(new CustomEvent("open-about-modal"))}
-            className="hidden sm:inline-flex header-pill px-3.5"
+          <button
+            type="button"
+            onClick={() => scrollToSection("about")}
+            className="header-pill px-2 xs:px-2.5 sm:px-3.5 text-[11px] xs:text-xs shrink-0"
           >
             About
           </button>
-          <button 
-            type="button" 
-            onClick={() => window.dispatchEvent(new CustomEvent("open-faq-modal"))}
-            className="hidden sm:inline-flex header-pill px-3.5"
+          <button
+            type="button"
+            onClick={() => scrollToSection("faq")}
+            className="header-pill px-2 xs:px-2.5 sm:px-3.5 text-[11px] xs:text-xs shrink-0"
           >
             FAQ
           </button>
@@ -50,7 +69,7 @@ export default function Header() {
           <button
             type="button"
             aria-label="Open support modal"
-            className="header-pill w-full sm:w-auto px-2 xs:px-3 sm:px-3.5 gap-1.5 hover:border-amber-400/50 hover:text-amber-200"
+            className="header-pill px-2 xs:px-2.5 sm:px-3.5 gap-1.5 hover:border-amber-400/50 hover:text-amber-200 shrink-0"
             onClick={() => window.dispatchEvent(new CustomEvent("open-support-modal"))}
           >
             <span className="text-xs text-red-400 animate-pulse shrink-0" aria-hidden="true">
