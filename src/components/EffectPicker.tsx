@@ -4,15 +4,13 @@ import React, { useState } from "react";
 import { EffectKey, EFFECT_LABELS, EFFECT_ICONS, EFFECT_ORDER } from "@/data/effects";
 
 interface EffectPickerProps {
+  isActive: boolean;
   manualEffect: EffectKey | null;
   autoEffect: EffectKey;
-  onChange: (effect: EffectKey | null) => void;
+  onChange: (active: boolean, effect: EffectKey | null) => void;
 }
 
-// Mirrors VibePicker.tsx's Auto/manual popover pattern exactly, so the two
-// controls read as one family: Vibe picks the background mood, this picks
-// the foreground weather/light effect layered on top of it.
-export default function EffectPicker({ manualEffect, autoEffect, onChange }: EffectPickerProps) {
+export default function EffectPicker({ isActive, manualEffect, autoEffect, onChange }: EffectPickerProps) {
   const [open, setOpen] = useState(false);
   const active = manualEffect ?? autoEffect;
 
@@ -20,13 +18,13 @@ export default function EffectPicker({ manualEffect, autoEffect, onChange }: Eff
     <div className="relative">
       <button
         type="button"
-        className={`share-toggle-pill group shrink-0 ${manualEffect ? "active" : ""}`}
+        className={`share-toggle-pill group shrink-0 ${isActive ? "active" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span aria-hidden="true">{EFFECT_ICONS[active]}</span>
-        <span className="font-medium tracking-wide">Effect</span>
+        <span aria-hidden="true">{isActive ? EFFECT_ICONS[active] : "🌫️"}</span>
+        <span className="font-medium tracking-wide">Atmosphere</span>
       </button>
 
       {open && (
@@ -38,12 +36,28 @@ export default function EffectPicker({ manualEffect, autoEffect, onChange }: Eff
           <button
             type="button"
             role="option"
-            aria-selected={manualEffect === null}
+            aria-selected={!isActive}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors ${
-              manualEffect === null ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
+              !isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
             }`}
             onClick={() => {
-              onChange(null);
+              onChange(false, null);
+              setOpen(false);
+            }}
+          >
+            <span aria-hidden="true">🚫</span>
+            <span className="flex-1">Off</span>
+          </button>
+
+          <button
+            type="button"
+            role="option"
+            aria-selected={isActive && manualEffect === null}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors ${
+              isActive && manualEffect === null ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
+            }`}
+            onClick={() => {
+              onChange(true, null);
               setOpen(false);
             }}
           >
@@ -56,12 +70,12 @@ export default function EffectPicker({ manualEffect, autoEffect, onChange }: Eff
               key={e}
               type="button"
               role="option"
-              aria-selected={manualEffect === e}
+              aria-selected={isActive && manualEffect === e}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors ${
-                manualEffect === e ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
+                isActive && manualEffect === e ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
               onClick={() => {
-                onChange(e);
+                onChange(true, e);
                 setOpen(false);
               }}
             >

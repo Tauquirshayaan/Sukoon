@@ -215,18 +215,15 @@ export default function Home() {
 
           <div className="w-full max-w-md xs:max-w-lg sm:max-w-2xl flex flex-col items-center gap-2 sm:gap-3 mt-auto mb-1 sm:my-auto">
             <div className="order-0 pointer-events-auto flex items-center justify-center gap-1.5 xs:gap-2 flex-wrap max-w-full py-1 px-1">
-              <button
-                type="button"
-                className={`rain-toggle-pill group shrink-0 ${isRainActive ? "active" : ""}`}
-                onClick={() => setIsRainActive(!isRainActive)}
-              >
-                <span className="text-sm transition-transform group-hover:scale-125" aria-hidden="true">
-                  {EFFECT_ICONS[effectiveEffect]}
-                </span>
-                <span className="font-medium tracking-wide">Atmosphere</span>
-              </button>
-
-              <EffectPicker manualEffect={manualEffect} autoEffect={autoEffect} onChange={setManualEffect} />
+              <EffectPicker 
+                isActive={isRainActive} 
+                manualEffect={manualEffect} 
+                autoEffect={autoEffect} 
+                onChange={(active, effect) => {
+                  setIsRainActive(active);
+                  setManualEffect(effect);
+                }} 
+              />
 
               <button
                 type="button"
