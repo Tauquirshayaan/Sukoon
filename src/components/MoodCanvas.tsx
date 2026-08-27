@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { MoodKey } from "@/data/surahMoods";
 
 interface MoodCanvasProps {
-  mood: string;
+  mood: MoodKey;
 }
 
 /**
@@ -19,8 +20,6 @@ interface MoodCanvasProps {
  * these are deliberately subtle (this sits *behind* the calligraphy and
  * player) rather than a foreground effect like the rain.
  */
-
-type MoodKey = "dawn" | "dunes" | "water" | "default";
 
 interface MoodConfig {
   colors: string[];
@@ -70,7 +69,7 @@ const MOODS: Record<MoodKey, MoodConfig> = {
   },
 };
 
-const PARTICLE_COUNT = 60;
+const PARTICLE_COUNT = 90;
 
 export default function MoodCanvas({ mood }: MoodCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

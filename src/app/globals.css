@@ -102,6 +102,30 @@
     }
   }
 
+  /*
+   * Two small, deliberately subtle atmosphere touches, added to make the
+   * screen feel like a still, contemplative space rather than a flat
+   * player UI — a slow "breathing" pulse on the legibility scrim (barely
+   * perceptible, paced like a slow breath, not a disco effect), and a
+   * vignette that quietly darkens the edges so attention settles on the
+   * calligraphy/player rather than the corners of the screen.
+   */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; }
+  }
+  .breathing-scrim {
+    animation: breathe 9s ease-in-out infinite;
+  }
+  .vignette {
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.35) 100%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .breathing-scrim {
+      animation: none;
+    }
+  }
+
   /* Typography */
   .font-hindi {
     font-family: var(--font-hindi, serif);

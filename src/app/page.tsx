@@ -11,6 +11,9 @@ import { TRACK_MAP } from '@/data/trackMap';
 import CalligraphyCard from '@/components/CalligraphyCard';
 import BackgroundVideo from '@/components/BackgroundVideo';
 import MoodCanvas from '@/components/MoodCanvas';
+import VibePicker from '@/components/VibePicker';
+import { resolveMoodFromTitle } from '@/lib/moodMatch';
+import { MoodKey } from '@/data/surahMoods';
 
 function formatTime(s: number) {
   if (!s || isNaN(s)) return '0:00';
@@ -29,6 +32,7 @@ export default function Home() {
   const [progressPct, setProgressPct] = useState(0);
   const [currentTimeStr, setCurrentTimeStr] = useState("0:00");
   const [totalTimeStr, setTotalTimeStr] = useState("0:00");
+  const [manualMood, setManualMood] = useState<MoodKey | null>(null);
 
   const playerRef = useRef<any>(null);
 
@@ -141,10 +145,21 @@ export default function Home() {
 
   const currentMeta = currentVideoId ? TRACK_MAP[currentVideoId] : null;
 
+  // Mood resolution, in priority order:
+  //   1. A manual pick from the VibePicker always wins outright.
+  //   2. A hand-curated TRACK_MAP entry (exact video ID match) — the most
+  //      trustworthy source once a track has actually been reviewed.
+  //   3. Otherwise, derive it from the surah name found in the video's own
+  //      title (see src/lib/moodMatch.ts) — this is what makes the mood
+  //      actually vary across all ~90+ tracks that aren't in TRACK_MAP yet,
+  //      instead of everything falling back to one static "default" mood.
+  const autoMood: MoodKey = currentMeta?.mood ?? resolveMoodFromTitle(videoTitle).mood;
+  const effectiveMood: MoodKey = manualMood ?? autoMood;
+
   return (
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
-      <BackgroundVideo mood={currentMeta?.mood || "default"} />
-      <MoodCanvas mood={currentMeta?.mood || "default"} />
+      <BackgroundVideo mood={effectiveMood} />
+      <MoodCanvas mood={effectiveMood} />
       <AtmosphereCanvas isActive={isRainActive} />
       
       {/* Landing Overlay */}
@@ -202,6 +217,8 @@ export default function Home() {
               >
                 <span className="font-medium tracking-wide">Shuffle</span>
               </button>
+
+              <VibePicker manualMood={manualMood} autoMood={autoMood} onChange={setManualMood} />
 
               <button
                 type="button"

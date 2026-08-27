@@ -128,7 +128,8 @@ export default function AtmosphereCanvas({ isActive }: AtmosphereCanvasProps) {
         now just a light legibility scrim above the mood layer, at z-2, and
         the rain/lightning FX above that.
       */}
-      <div className="absolute inset-0 z-[3] bg-gradient-to-t from-black/55 via-black/10 to-black/35 pointer-events-none"></div>
+      <div className="absolute inset-0 z-[3] bg-gradient-to-t from-black/55 via-black/10 to-black/35 pointer-events-none breathing-scrim"></div>
+      <div className="absolute inset-0 z-[4] vignette pointer-events-none"></div>
 
       <canvas
         ref={canvasRef}

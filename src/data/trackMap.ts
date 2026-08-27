@@ -1,10 +1,12 @@
+import { MoodKey } from "./surahMoods";
+
 export interface TrackMeta {
   videoId: string;
   surahNumber: number;
   surahNameArabic: string;
   openingAyahArabic: string;
   reference: string;
-  mood: string;
+  mood: MoodKey;
 }
 
 // STATUS: placeholder data only — none of these video IDs belong to the real

@@ -1,19 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { MoodKey, MOOD_ORDER } from '@/data/surahMoods';
 
 interface BackgroundVideoProps {
-  mood: string;
+  mood: MoodKey;
 }
-
-const ALL_MOODS = ['dawn', 'dunes', 'water', 'default'];
 
 export default function BackgroundVideo({ mood }: BackgroundVideoProps) {
   const activeMood = mood || 'default';
 
   return (
     <div className="background-container">
-      {ALL_MOODS.map((m) => {
+      {MOOD_ORDER.map((m) => {
         const isActive = m === activeMood;
         return (
           <div
