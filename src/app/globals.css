@@ -376,6 +376,41 @@
     overflow-y: auto;
   }
 
+  /* Live chat panel */
+  .chat-card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: min(600px, 72dvh);
+    max-height: 85dvh;
+    background: #1c0704;
+    background: radial-gradient(circle at top, #2b0b06 0%, #150503 100%);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+  }
+  @media (max-width: 380px) {
+    .chat-card { border-radius: 18px; }
+  }
+  .chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 158, 11, 0.35) transparent;
+  }
+  .chat-messages::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.35);
+    border-radius: 9999px;
+  }
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.55);
+  }
+
   /* Focus panel: tap the verse card to slide this up from the bottom. */
   .focus-sheet-backdrop {
     position: fixed;

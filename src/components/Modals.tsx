@@ -32,10 +32,15 @@ export default function Modals() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Generate or retrieve user name
+    // Generate or retrieve user name. Appending a random 3-digit suffix
+    // keeps collisions rare even with thousands of concurrent visitors
+    // sharing the same 32-name pool (localStorage has no way to check
+    // what names other visitors are already using).
     let storedName = localStorage.getItem('sukoon_chat_name');
     if (!storedName) {
-      storedName = FLOWER_NAMES[Math.floor(Math.random() * FLOWER_NAMES.length)];
+      const flower = FLOWER_NAMES[Math.floor(Math.random() * FLOWER_NAMES.length)];
+      const suffix = Math.floor(Math.random() * 900) + 100;
+      storedName = `${flower} ${suffix}`;
       localStorage.setItem('sukoon_chat_name', storedName);
     }
     setUserName(storedName);
@@ -256,8 +261,8 @@ export default function Modals() {
       )}
 
       {activeModal === "chat" && (
-        <div id="liveChatPanel" className="open" role="dialog" aria-modal="true" onClick={() => setActiveModal(null)}>
-          <div className="chat-card flex flex-col" onClick={(e) => e.stopPropagation()} style={{ height: '70vh', maxHeight: '600px' }}>
+        <div id="liveChatPanel" className="app-modal open" role="dialog" aria-modal="true" onClick={() => setActiveModal(null)}>
+          <div className="chat-card flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
@@ -280,17 +285,29 @@ export default function Modals() {
               {messages.length === 0 && (
                 <div className="text-center text-white/50 text-xs mt-4">No messages yet. Be the first to say Salam!</div>
               )}
-              {messages.map((msg) => (
-                <div key={msg.id} className={`chat-msg-row ${msg.name === 'Admin' ? 'other' : 'self-start'}`}>
-                  <div className="chat-msg bg-black/40 border border-white/10 rounded-xl p-3 max-w-[85%] text-sm">
-                    <span className="chat-msg-name font-bold block mb-1 text-xs" style={{ color: msg.name === 'Admin' ? "#fbbf24" : "#9ca3af" }}>
-                      {msg.name}:
-                    </span>
-                    <span className="text-white/90 break-words">{msg.text}</span>
-                    <span className="chat-msg-time block text-[10px] text-white/40 mt-1 text-right">{formatTime(msg.timestamp)}</span>
+              {messages.map((msg) => {
+                const isAdmin = msg.name === 'Admin';
+                const isOwn = !isAdmin && msg.name === userName;
+                return (
+                  <div key={msg.id} className={`chat-msg-row flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`chat-msg rounded-xl p-3 max-w-[85%] text-sm border ${
+                        isAdmin
+                          ? 'bg-amber-500/15 border-amber-400/40'
+                          : isOwn
+                            ? 'bg-amber-500/10 border-amber-400/25'
+                            : 'bg-black/40 border-white/10'
+                      }`}
+                    >
+                      <span className="chat-msg-name font-bold block mb-1 text-xs" style={{ color: isAdmin ? "#fbbf24" : isOwn ? "#fcd34d" : "#9ca3af" }}>
+                        {isOwn ? "You" : msg.name}:
+                      </span>
+                      <span className="text-white/90 break-words">{msg.text}</span>
+                      <span className="chat-msg-time block text-[10px] text-white/40 mt-1 text-right">{formatTime(msg.timestamp)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
 

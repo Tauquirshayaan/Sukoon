@@ -99,9 +99,16 @@ export default function Home() {
 
   const handleStart = () => {
     if (!playerRef.current) return;
-    playerRef.current.unMute();
-    playerRef.current.setVolume(50);
-    playerRef.current.playVideo();
+    try {
+      playerRef.current.unMute();
+      playerRef.current.setVolume(50);
+      playerRef.current.playVideo();
+    } catch (err) {
+      // The YouTube iframe widget API can throw transiently right after
+      // onReady fires (its internal iframe reference isn't hydrated yet).
+      // Don't let that leave the user stuck behind the landing overlay.
+      console.error("Failed to start playback:", err);
+    }
     setHasStarted(true);
   };
 
