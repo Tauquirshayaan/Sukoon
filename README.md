@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sukoon - Ambient Quran Radio ✨
+
+Sukoon is a carefully curated, zero-friction ambient radio web application designed to help users find peace and tranquility. It blends beautiful recitations of the Quran (via an invisible YouTube player) with soothing atmospheric sounds like rain and gentle waves.
+
+## Features
+
+- **Ambient & Zero Friction**: Full-bleed glassmorphic UI that gets out of the way. Starts with a serene landing screen that fades into the player.
+- **Continuous Autoplay**: Seamlessly plays through curated recitations.
+- **Atmosphere System**: Built-in HTML5 canvas effects (like Rain & Lightning) that overlay naturally with the recitations.
+- **Glassmorphic UI**: Custom CSS mesh gradients and blur effects matching a premium aesthetic.
+- **Live Chat**: Anonymous, real-time community chat panel (backed by an API route with profanity filtering).
+- **Beautiful Typography**: Calligraphy cards featuring the `Amiri` font for Arabic text, fading in gracefully on track changes.
+- **Full Controls**: Play/Pause, Next/Prev, Volume Control, Shuffle, and Share.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS v4 & custom animated CSS mesh gradients
+- **Player**: `react-youtube` (headless player integration)
+- **Deployment**: Vercel ready
 
 ## Getting Started
 
-First, run the development server:
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Run the Development Server**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) (or whichever port Next.js assigns) in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/src/app`: Next.js App Router files (`page.tsx`, `layout.tsx`, `globals.css`)
+- `/src/components`: UI components (`VintagePlayer.tsx`, `Header.tsx`, `AtmosphereCanvas.tsx`, `Modals.tsx`, `CalligraphyCard.tsx`, `YouTubePlayer.tsx`)
+- `/src/data`: Data maps (e.g. `trackMap.ts` mapping YouTube IDs to Surah metadata)
+- `sukoonprd.md`: Original Product Requirements Document (PRD)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Adding Custom Background Videos
 
-## Learn More
+By default, the app uses beautiful animated CSS mesh gradients as a fallback. To enable the looping video backgrounds (as specified in the PRD), drop your video files into the `/public/videos/` directory:
+- `/public/videos/dawn.mp4`
+- `/public/videos/dunes.mp4`
+- `/public/videos/water.mp4`
+- `/public/videos/default.mp4`
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+Private Property of Sukoon Developer.
