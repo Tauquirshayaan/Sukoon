@@ -282,8 +282,9 @@ export default function Home() {
               onVolumeChange={handleVolumeChange}
             />
 
-            <footer className="order-3 sm:order-3 pointer-events-auto text-[8.5px] sm:text-xs text-white/50 tracking-widest font-mono mt-0 sm:mt-1">
-              contact: salam@sukoon.example.com
+            <footer className="order-3 sm:order-3 pointer-events-auto text-[8.5px] sm:text-xs text-white/40 tracking-widest mt-0 sm:mt-1 flex items-center justify-center gap-1">
+              designed &amp; developed with
+              <span className="text-rose-400 animate-pulse" aria-label="love">♥</span>
             </footer>
           </div>
         </main>
