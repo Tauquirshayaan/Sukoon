@@ -44,7 +44,7 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
         {resolvedArabicName ? (
           <>
             <h2
-              className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-2"
+              className="font-hindi text-5xl xs:text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-2"
               dir="rtl"
             >
               {resolvedArabicName}
@@ -75,7 +75,7 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
       key={meta.videoId}
     >
       <h2
-        className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4"
+        className="font-hindi text-5xl xs:text-6xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-3"
         dir="rtl"
       >
         {meta.surahNameArabic}

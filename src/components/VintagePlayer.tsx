@@ -41,7 +41,6 @@ export default function VintagePlayer({
     onSeek(pct);
   };
 
-  // Touch-friendly progress seek
   const handleProgressBarTouch = (e: React.TouchEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const touch = e.touches[0];
@@ -79,9 +78,10 @@ export default function VintagePlayer({
 
   return (
     <section
-      className="music-player order-2 sm:order-2 pointer-events-auto shadow-[0_25px_60px_rgba(0,0,0,0.85)] w-full relative z-30"
+      className="music-player pointer-events-auto w-full relative z-30"
       aria-label="Sukoon music player"
     >
+      {/* Cover art — slightly smaller on mobile */}
       <button
         className="music-cover-frame shrink-0"
         type="button"
@@ -95,17 +95,19 @@ export default function VintagePlayer({
         <span className="music-cover-hole" aria-hidden="true"></span>
       </button>
 
-      <div className="track-block flex-1 flex flex-col justify-center overflow-hidden px-2">
-        <div className="track-top">
-          <div className="track-name text-white font-bold text-sm sm:text-base truncate">{trackName || "Loading..."}</div>
+      {/* Track info + progress — takes all remaining width */}
+      <div className="track-block flex-1 min-w-0 flex flex-col justify-center overflow-hidden px-1 sm:px-2">
+        <div className="truncate text-white font-bold text-xs sm:text-sm leading-tight">
+          {trackName || "Loading…"}
         </div>
-        <p className="station text-white/70 text-xs truncate">
+        <div className="truncate text-white/60 text-[10px] sm:text-xs mt-0.5">
           {channelName}
-        </p>
-        
-        <div className="mt-2 flex flex-col gap-1 w-full">
+        </div>
+
+        {/* Progress bar + time — single row on all sizes */}
+        <div className="flex items-center gap-1.5 mt-2 w-full">
           <div
-            className="w-full h-2 sm:h-1.5 bg-white/30 rounded-full cursor-pointer overflow-hidden mt-1 touch-action-none"
+            className="flex-1 h-1.5 bg-white/25 rounded-full cursor-pointer overflow-hidden relative"
             role="slider"
             aria-label="Track progress"
             aria-valuemin={0}
@@ -116,61 +118,65 @@ export default function VintagePlayer({
             onTouchStart={handleProgressBarTouch}
           >
             <div
-              className="h-full bg-white transition-all duration-200 ease-linear"
+              className="h-full bg-white rounded-full transition-all duration-200 ease-linear"
               style={{ width: `${progress}%` }}
-            ></div>
+            />
           </div>
-          <div className="text-white/60 text-[10px] font-mono tracking-wide">
-            {currentTime} / {totalTime}
-          </div>
+          {/* Time always inline, never wraps */}
+          <span className="text-white/50 text-[9px] sm:text-[10px] font-mono shrink-0 tabular-nums">
+            {currentTime}/{totalTime}
+          </span>
         </div>
       </div>
 
-      <div className="player-controls-wrap flex items-center gap-2">
-        <div className="player-actions flex items-center gap-3">
-          <button
-            className="text-white/80 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            type="button"
-            aria-label="Previous track"
-            onClick={onPrev}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current">
-              <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"></path>
-            </svg>
-          </button>
-          
-          <button
-            className="bg-white text-black w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
-            type="button"
-            aria-label={isPlaying ? "Pause music" : "Play music"}
-            onClick={onPlayPause}
-          >
-            {isPlaying ? (
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current ml-1">
-                <path d="M8 5v14l11-7-11-7Z"></path>
-              </svg>
-            )}
-          </button>
-          
-          <button
-            className="text-white/80 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            type="button"
-            aria-label="Next track"
-            onClick={onNext}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current">
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path>
-            </svg>
-          </button>
-        </div>
+      {/* Controls — compact on mobile */}
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 ml-1">
+        {/* Prev */}
+        <button
+          className="text-white/70 hover:text-white transition-colors w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
+          type="button"
+          aria-label="Previous track"
+          onClick={onPrev}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current">
+            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+          </svg>
+        </button>
 
-        <div className="relative flex items-center ml-1" ref={volumeRef}>
+        {/* Play / Pause */}
+        <button
+          className="bg-white text-black w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform shrink-0"
+          type="button"
+          aria-label={isPlaying ? "Pause music" : "Play music"}
+          onClick={onPlayPause}
+        >
+          {isPlaying ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5 fill-current">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5">
+              <path d="M8 5v14l11-7-11-7Z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Next */}
+        <button
+          className="text-white/70 hover:text-white transition-colors w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
+          type="button"
+          aria-label="Next track"
+          onClick={onNext}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+          </svg>
+        </button>
+
+        {/* Volume */}
+        <div className="relative flex items-center" ref={volumeRef}>
           <button
-            className="text-white/60 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="text-white/50 hover:text-white transition-colors w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
             type="button"
             aria-label={`Volume: ${volume}%`}
             aria-expanded={showVolume}
@@ -180,16 +186,16 @@ export default function VintagePlayer({
             }}
           >
             {volume === 0 ? (
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current">
-                <path d="M11 5 6 9H2v6h4l5 4V5Z"></path>
-                <path d="m22 9-6 6"></path>
-                <path d="m16 9 6 6"></path>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-current">
+                <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                <path d="m22 9-6 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="m16 9 6 6" stroke="currentColor" strokeWidth="2" fill="none" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current">
-                <path d="M11 5 6 9H2v6h4l5 4V5Z"></path>
-                <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
-                <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-current">
+                <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                <path d="M15.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M18.5 5.5a9 9 0 0 1 0 13" stroke="currentColor" strokeWidth="2" fill="none" />
               </svg>
             )}
           </button>
@@ -205,7 +211,7 @@ export default function VintagePlayer({
                 value={volume}
                 onChange={handleVolumeChange}
                 aria-label="Volume level"
-                className="w-24 h-2 accent-white bg-white/30 rounded-full appearance-none cursor-pointer"
+                className="w-20 sm:w-24 h-2 accent-white bg-white/30 rounded-full appearance-none cursor-pointer"
               />
             </div>
           )}

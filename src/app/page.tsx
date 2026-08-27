@@ -210,9 +210,9 @@ export default function Home() {
       <div className={`transition-opacity duration-1000 ${hasStarted ? 'opacity-100' : 'opacity-0'}`}>
         <Header />
 
-        <main className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-14 pb-2 xs:pb-3 sm:pt-20 sm:pb-6 px-3 sm:px-6 pointer-events-none">
+        <main className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-12 pb-2 sm:pt-20 sm:pb-6 px-3 sm:px-6 pointer-events-none">
           
-          <div className="pointer-events-auto text-center mt-6 xs:mt-8 sm:mt-0 w-full flex-1 flex flex-col items-center justify-center">
+          <div className="pointer-events-auto text-center mt-4 sm:mt-0 w-full flex-1 flex flex-col items-center justify-center min-h-0">
             <CalligraphyCard
               meta={currentMeta}
               fallbackTitle={videoTitle}
@@ -222,7 +222,7 @@ export default function Home() {
 
             <button
               type="button"
-              className="tweak-pill group border-amber-500/40 text-amber-300 hover:text-amber-100 hover:border-amber-400 cursor-pointer mt-8 mx-auto"
+              className="tweak-pill group border-amber-500/40 text-amber-300 hover:text-amber-100 hover:border-amber-400 cursor-pointer mt-4 sm:mt-8 mx-auto"
               onClick={() => window.dispatchEvent(new CustomEvent("open-chat-modal"))}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" aria-hidden="true"></span>
@@ -230,8 +230,8 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="w-full max-w-md xs:max-w-lg sm:max-w-2xl flex flex-col items-center gap-2 sm:gap-3 mt-auto mb-1 sm:my-auto">
-            <div className="order-0 pointer-events-auto flex items-center justify-center gap-1.5 xs:gap-2 flex-wrap max-w-full py-1 px-1">
+          <div className="w-full max-w-md sm:max-w-2xl flex flex-col items-center gap-1.5 sm:gap-3 mt-auto mb-1 sm:mb-3 px-1">
+            <div className="pointer-events-auto flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap w-full py-0.5">
               <EffectPicker 
                 isActive={isRainActive} 
                 manualEffect={manualEffect} 

@@ -198,33 +198,49 @@
   .music-player {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
     width: 100%;
     max-width: 580px;
     background: rgba(18, 8, 6, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 9999px;
-    padding: 8px 16px;
+    padding: 7px 12px 7px 7px;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
   }
-  /* On very small screens, tighten the player layout */
-  @media (max-width: 380px) {
+  @media (min-width: 640px) {
     .music-player {
-      gap: 10px;
-      padding: 6px 12px;
-    }
-    .music-cover-frame {
-      width: 52px !important;
-      height: 52px !important;
+      gap: 14px;
+      padding: 8px 16px 8px 8px;
     }
   }
-  /* Circular, spinning "cassette/vinyl" cover art */
+  /* On very small screens, tighten further */
+  @media (max-width: 360px) {
+    .music-player {
+      gap: 8px;
+      padding: 6px 10px 6px 6px;
+    }
+  }
+  /* Circular, spinning cover art — smaller on mobile, normal on desktop */
   .music-cover-frame {
-    width: 64px; height: 64px; border-radius: 50%; position: relative; flex-shrink: 0; cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.25); background: #1c1917; padding: 0; overflow: visible;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: #1c1917;
+    padding: 0;
+    overflow: visible;
     transition: transform 0.2s, border-color 0.2s;
+  }
+  @media (min-width: 640px) {
+    .music-cover-frame {
+      width: 64px;
+      height: 64px;
+    }
   }
   .music-cover-frame:hover { transform: scale(1.05); border-color: #f59e0b; }
   .music-cover {
