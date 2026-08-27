@@ -9,6 +9,14 @@ interface ChatMessage {
   timestamp: number;
 }
 
+const FLOWER_NAMES = [
+  "Rose", "Jasmine", "Lily", "Orchid", "Tulip", "Iris", "Daisy", "Lotus", 
+  "Peony", "Daffodil", "Violet", "Marigold", "Lavender", "Bluebell", 
+  "Snowdrop", "Poppy", "Hydrangea", "Camellia", "Magnolia", "Azalea",
+  "Aster", "Begonia", "Carnation", "Chrysanthemum", "Clematis", "Crocus",
+  "Dahlia", "Freesia", "Geranium", "Hibiscus", "Hyacinth", "Lilac"
+];
+
 export default function Modals() {
   const [activeModal, setActiveModal] = useState<"support" | "chat" | "about" | "faq" | null>(null);
   
@@ -17,9 +25,18 @@ export default function Modals() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("Anonymous");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Generate or retrieve user name
+    let storedName = localStorage.getItem('sukoon_chat_name');
+    if (!storedName) {
+      storedName = FLOWER_NAMES[Math.floor(Math.random() * FLOWER_NAMES.length)];
+      localStorage.setItem('sukoon_chat_name', storedName);
+    }
+    setUserName(storedName);
+
     const handleOpenSupport = () => setActiveModal("support");
     const handleOpenChat = () => setActiveModal("chat");
     const handleOpenAbout = () => setActiveModal("about");
@@ -79,7 +96,7 @@ export default function Modals() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: "Anonymous", // Since PRD says no accounts
+          name: userName,
           text: inputText
         }),
       });

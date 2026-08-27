@@ -8,21 +8,25 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-// In-memory array to store chat messages
-// Note: In production (e.g., Vercel), this will reset when the serverless function spins down.
-// For a fully persistent chat, replace this with a database (like Firebase or Supabase).
-let messages: ChatMessage[] = [
-  {
-    id: 'system-1',
-    name: 'Admin',
-    text: 'Assalamu Alaikum! Welcome to Sukoon. Let us know your thoughts.',
-    timestamp: Date.now(),
-  }
-];
+// Ensure TypeScript knows about this property on globalThis
+declare global {
+  var chatMessages: ChatMessage[] | undefined;
+}
+
+if (!globalThis.chatMessages) {
+  globalThis.chatMessages = [
+    {
+      id: 'system-1',
+      name: 'Admin',
+      text: 'Assalamu Alaikum! Welcome to Sukoon. Let us know your thoughts.',
+      timestamp: Date.now(),
+    }
+  ];
+}
 
 export async function GET() {
   // Return the last 50 messages to prevent overload
-  const recentMessages = messages.slice(-50);
+  const recentMessages = globalThis.chatMessages!.slice(-50);
   return NextResponse.json({ messages: recentMessages });
 }
 
@@ -54,11 +58,11 @@ export async function POST(request: Request) {
       timestamp: Date.now(),
     };
 
-    messages.push(newMessage);
+    globalThis.chatMessages!.push(newMessage);
 
     // Keep the array from growing infinitely in memory
-    if (messages.length > 100) {
-      messages.shift();
+    if (globalThis.chatMessages!.length > 100) {
+      globalThis.chatMessages!.shift();
     }
 
     return NextResponse.json({ success: true, message: newMessage });
