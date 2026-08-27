@@ -30,7 +30,7 @@ export default function Home() {
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
-  const [isRainActive, setIsRainActive] = useState(false);
+  const [isRainActive, setIsRainActive] = useState(true);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [videoTitle, setVideoTitle] = useState<string>("");
   const [progressPct, setProgressPct] = useState(0);
