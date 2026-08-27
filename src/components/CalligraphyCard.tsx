@@ -7,9 +7,10 @@ interface CalligraphyCardProps {
   meta: TrackMeta | null;
   fallbackTitle?: string;
   resolvedArabicName?: string;
+  onOpenFocus?: () => void;
 }
 
-export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicName }: CalligraphyCardProps) {
+export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicName, onOpenFocus }: CalligraphyCardProps) {
   const [isVisible, setIsVisible] = React.useState(false);
 
   React.useEffect(() => {
@@ -32,15 +33,18 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
     // styled to match the mapped state — same decorative mark and type
     // family — rather than reading as a plain, unfinished-looking title card.
     return (
-      <div
-        className={`flex flex-col items-center justify-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      <button
+        type="button"
+        onClick={onOpenFocus}
+        aria-label="Show verse context"
+        className={`group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       >
         <span className="font-hindi text-2xl text-amber-200/70 mb-8" aria-hidden="true">﷽</span>
-        
+
         {resolvedArabicName ? (
           <>
-            <h2 
-              className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-2" 
+            <h2
+              className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-2"
               dir="rtl"
             >
               {resolvedArabicName}
@@ -55,33 +59,36 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
           </h2>
         )}
 
-        <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
+        <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm transition-colors group-hover:text-white/80 group-hover:border-white/25">
           Playing Track
         </span>
-      </div>
+      </button>
     );
   }
 
   return (
-    <div 
-      className={`flex flex-col items-center justify-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+    <button
+      type="button"
+      onClick={onOpenFocus}
+      aria-label="Show verse context"
+      className={`group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       key={meta.videoId}
     >
-      <h2 
-        className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4" 
+      <h2
+        className="font-hindi text-6xl xs:text-7xl sm:text-8xl md:text-9xl text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4"
         dir="rtl"
       >
         {meta.surahNameArabic}
       </h2>
-      <p 
-        className="font-hindi text-xl xs:text-2xl sm:text-3xl text-white/90 leading-relaxed text-center max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] mb-6" 
+      <p
+        className="font-hindi text-xl xs:text-2xl sm:text-3xl text-white/90 leading-relaxed text-center max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] mb-6"
         dir="rtl"
       >
         {meta.openingAyahArabic}
       </p>
-      <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
+      <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm transition-colors group-hover:text-white/80 group-hover:border-white/25">
         {meta.reference}
       </span>
-    </div>
+    </button>
   );
 }

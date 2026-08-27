@@ -13,9 +13,11 @@ import BackgroundVideo from '@/components/BackgroundVideo';
 import MoodCanvas from '@/components/MoodCanvas';
 import VibePicker from '@/components/VibePicker';
 import EffectPicker from '@/components/EffectPicker';
+import FocusPanel from '@/components/FocusPanel';
 import { resolveMoodFromTitle } from '@/lib/moodMatch';
-import { MoodKey } from '@/data/surahMoods';
-import { EffectKey, EFFECT_ICONS, resolveAutoEffect } from '@/data/effects';
+import { MoodKey, SURAH_MOODS } from '@/data/surahMoods';
+import { EffectKey, resolveAutoEffect } from '@/data/effects';
+import { getFamousVerseForSurah } from '@/data/famousVerses';
 
 function formatTime(s: number) {
   if (!s || isNaN(s)) return '0:00';
@@ -36,6 +38,7 @@ export default function Home() {
   const [totalTimeStr, setTotalTimeStr] = useState("0:00");
   const [manualMood, setManualMood] = useState<MoodKey | null>(null);
   const [manualEffect, setManualEffect] = useState<EffectKey | null>(null);
+  const [isFocusOpen, setIsFocusOpen] = useState(false);
 
   const playerRef = useRef<any>(null);
 
@@ -168,6 +171,19 @@ export default function Home() {
   const autoEffect: EffectKey = resolveAutoEffect(effectiveMood);
   const effectiveEffect: EffectKey = manualEffect ?? autoEffect;
 
+  // Focus panel context: which surah is this, and does it have a curated
+  // famous verse (src/data/famousVerses.ts)? A hand-curated TRACK_MAP entry
+  // is the most precise source when it exists; otherwise this falls back
+  // to the same title-based surah guess already used for the mood above,
+  // so the panel still has *something* to show for the ~90+ tracks not
+  // yet curated.
+  const activeSurahNumber: number | null = currentMeta?.surahNumber ?? resolved.surah?.number ?? null;
+  const activeSurahEntry = activeSurahNumber ? SURAH_MOODS.find((s) => s.number === activeSurahNumber) ?? null : null;
+  const activeSurahNameArabic: string | null = currentMeta?.surahNameArabic ?? activeSurahEntry?.arabicName ?? null;
+  const activeSurahNameEnglish: string | null = activeSurahEntry?.name ?? null;
+  const activeReference: string | null = currentMeta?.reference ?? null;
+  const famousVerse = getFamousVerseForSurah(activeSurahNumber);
+
   return (
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
       <BackgroundVideo mood={effectiveMood} />
@@ -197,10 +213,11 @@ export default function Home() {
         <main className="absolute inset-0 z-10 flex flex-col items-center justify-between pt-14 pb-2 xs:pb-3 sm:pt-20 sm:pb-6 px-3 sm:px-6 pointer-events-none">
           
           <div className="pointer-events-auto text-center mt-6 xs:mt-8 sm:mt-0 w-full flex-1 flex flex-col items-center justify-center">
-            <CalligraphyCard 
-              meta={currentMeta} 
-              fallbackTitle={videoTitle} 
+            <CalligraphyCard
+              meta={currentMeta}
+              fallbackTitle={videoTitle}
               resolvedArabicName={resolved.surah?.arabicName}
+              onOpenFocus={() => setIsFocusOpen(true)}
             />
 
             <button
@@ -274,7 +291,17 @@ export default function Home() {
 
       <Modals />
 
-      <YouTubePlayer 
+      <FocusPanel
+        isOpen={isFocusOpen}
+        onClose={() => setIsFocusOpen(false)}
+        surahNumber={activeSurahNumber}
+        surahNameArabic={activeSurahNameArabic}
+        surahNameEnglish={activeSurahNameEnglish}
+        reference={activeReference}
+        famousVerse={famousVerse}
+      />
+
+      <YouTubePlayer
         onReady={handlePlayerReady} 
         onStateChange={handleStateChange}
         onError={handleError}
