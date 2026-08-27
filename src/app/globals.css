@@ -209,6 +209,17 @@
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
   }
+  /* On very small screens, tighten the player layout */
+  @media (max-width: 380px) {
+    .music-player {
+      gap: 10px;
+      padding: 6px 12px;
+    }
+    .music-cover-frame {
+      width: 52px !important;
+      height: 52px !important;
+    }
+  }
   /* Circular, spinning "cassette/vinyl" cover art */
   .music-cover-frame {
     width: 64px; height: 64px; border-radius: 50%; position: relative; flex-shrink: 0; cursor: pointer;
@@ -372,10 +383,11 @@
     border-bottom: none;
     border-radius: 24px 24px 0 0;
     box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-    padding: 20px 24px 28px;
+    padding: 20px 20px 32px;
     text-align: center;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     animation: sheetSlideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
   @keyframes sheetSlideUp {
@@ -504,10 +516,27 @@
     color: #bfdbfe;
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.25);
   }
-}
+  /* Ensure pill buttons are at least 44px tall on mobile for touch accessibility */
+  @media (max-width: 640px) {
+    .rain-toggle-pill, .share-toggle-pill, .tweak-pill {
+      min-height: 40px;
+      height: auto;
+      padding: 0 12px;
+    }
+    .header-pill {
+      min-height: 36px;
+    }
+    .focus-sheet-close {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+  }
+} /* end @layer components */
 
 .font-hindi { font-family: var(--font-arabic), 'Amiri', 'serif'; }
 .font-display { font-family: 'Inter', sans-serif; }
+
 
 #atmosphereCanvas {
   position: fixed;

@@ -55,6 +55,16 @@ export default function Modals() {
     };
   }, []);
 
+  // Close any open modal on Escape key
+  useEffect(() => {
+    if (!activeModal) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveModal(null);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [activeModal]);
+
   // Fetch messages function
   const fetchMessages = async () => {
     try {
@@ -245,9 +255,12 @@ export default function Modals() {
         <div id="liveChatPanel" className="open" role="dialog" aria-modal="true" onClick={() => setActiveModal(null)}>
           <div className="chat-card flex flex-col" onClick={(e) => e.stopPropagation()} style={{ height: '70vh', maxHeight: '600px' }}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true"></span>
-                <h2 className="text-white font-bold text-sm">Live Chat</h2>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true"></span>
+                  <h2 className="text-white font-bold text-sm">Live Chat</h2>
+                </div>
+                <p className="text-white/40 text-[10px] pl-4">You&apos;re chatting as <span className="text-amber-300 font-semibold">{userName}</span></p>
               </div>
               <button
                 type="button"

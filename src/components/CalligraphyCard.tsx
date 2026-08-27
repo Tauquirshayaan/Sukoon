@@ -39,7 +39,7 @@ export default function CalligraphyCard({ meta, fallbackTitle, resolvedArabicNam
         aria-label="Show verse context"
         className={`group flex flex-col items-center justify-center bg-transparent border-none p-0 cursor-pointer transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       >
-        <span className="font-hindi text-2xl text-amber-200/70 mb-8" aria-hidden="true">﷽</span>
+        <span className="font-hindi text-2xl text-amber-200/70 mb-8" aria-label="Bismillah ir-Rahman ir-Rahim">﷽</span>
 
         {resolvedArabicName ? (
           <>

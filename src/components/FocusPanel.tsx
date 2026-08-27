@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { FamousVerse } from "@/data/famousVerses";
 
 interface FocusPanelProps {
@@ -30,13 +30,38 @@ export default function FocusPanel({
   reference,
   famousVerses,
 }: FocusPanelProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-focus the close button when panel opens for keyboard accessibility
+  useEffect(() => {
+    if (isOpen && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div className="focus-sheet-backdrop" role="dialog" aria-modal="true" aria-label="Verse context" onClick={onClose}>
       <div className="focus-sheet-card" onClick={(e) => e.stopPropagation()}>
         <div className="focus-sheet-handle" aria-hidden="true"></div>
-        <button type="button" aria-label="Close" className="focus-sheet-close" onClick={onClose}>
+        <button
+          ref={closeButtonRef}
+          type="button"
+          aria-label="Close"
+          className="focus-sheet-close"
+          onClick={onClose}
+        >
           &times;
         </button>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MoodKey, MOOD_LABELS, MOOD_ORDER } from "@/data/surahMoods";
 
 interface VibePickerProps {
@@ -19,9 +19,32 @@ const MOOD_ICON: Record<MoodKey, string> = {
 export default function VibePicker({ manualMood, autoMood, onChange }: VibePickerProps) {
   const [open, setOpen] = useState(false);
   const active = manualMood ?? autoMood;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
         className={`share-toggle-pill group shrink-0 ${manualMood ? "active" : ""}`}
@@ -43,7 +66,7 @@ export default function VibePicker({ manualMood, autoMood, onChange }: VibePicke
             type="button"
             role="option"
             aria-selected={manualMood === null}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-left transition-colors min-h-[40px] ${
               manualMood === null ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
             }`}
             onClick={() => {
@@ -61,7 +84,7 @@ export default function VibePicker({ manualMood, autoMood, onChange }: VibePicke
               type="button"
               role="option"
               aria-selected={manualMood === m}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-left transition-colors min-h-[40px] ${
                 manualMood === m ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
               onClick={() => {
