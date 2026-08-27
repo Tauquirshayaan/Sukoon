@@ -29,16 +29,6 @@ export default function Header() {
           <span className="text-white/60 text-[10px] font-normal">online</span>
         </div>
 
-        {/* 2. Theme Selector */}
-        <div className="theme-select-wrap flex-1 sm:flex-initial sm:w-44 shrink-0">
-          <select aria-label="Choose theme" className="theme-select w-full" defaultValue="">
-            <option value="" disabled hidden>
-              Change Theme
-            </option>
-            <option value="/">🕌 Sukoon</option>
-            <option value="/night">🌙 Night Mode</option>
-          </select>
-        </div>
 
         {/* 3. Right side: About, FAQ, Support */}
         <nav aria-label="Primary" className="flex items-center gap-1.5 xs:gap-2 flex-1 sm:flex-initial justify-end shrink-0">
