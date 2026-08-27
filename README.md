@@ -39,13 +39,33 @@ Sukoon is a carefully curated, zero-friction ambient radio web application desig
 - `/src/data`: Data maps (e.g. `trackMap.ts` mapping YouTube IDs to Surah metadata)
 - `sukoonprd.md`: Original Product Requirements Document (PRD)
 
-## Adding Custom Background Videos
+## The mood/vibe system
 
-By default, the app uses beautiful animated CSS mesh gradients as a fallback. To enable the looping video backgrounds (as specified in the PRD), drop your video files into the `/public/videos/` directory:
-- `/public/videos/dawn.mp4`
-- `/public/videos/dunes.mp4`
-- `/public/videos/water.mp4`
-- `/public/videos/default.mp4`
+Three things were fixed here that were previously silently broken — worth understanding before you touch this again:
+
+1. **`.background-container` / `.background-layer` / `.background-video` had no CSS at all.** They're plain, unstyled divs in `BackgroundVideo.tsx`, so every mood layer collapsed to zero height regardless of whether a video loaded — this was the main reason the "mood" system was invisible. Fixed in `globals.css` (proper `position: absolute; inset: 0`, opacity crossfade on `.active`, a slow Ken Burns zoom for a bit of life even on the gradient fallback).
+2. **The Amiri calligraphy font wasn't actually loading.** `next/font/google`'s `variable: '--font-arabic'` option only exposes a scoped CSS variable — it does not register a global font named "Amiri" the way `globals.css` and `tailwind.config.ts` assumed. Both now reference `var(--font-arabic)`.
+3. **A procedural `MoodCanvas` layer was added** (`src/components/MoodCanvas.tsx`) so the site has real drifting motion — light motes, per-mood color and direction — even before any real video asset exists. It sits between the mood color layer and the legibility scrim, and costs nothing to keep even after real video loops are added.
+
+### Adding real looping video
+
+The app uses animated CSS mesh gradients + the `MoodCanvas` particle layer as the fallback. To layer in real footage, drop 10–20s, seamlessly looping, muted clips into `/public/videos/`:
+- `/public/videos/dawn.mp4` — soft clouds/light breaking, warm gold tones
+- `/public/videos/dunes.mp4` — slow desert dunes at dusk
+- `/public/videos/water.mp4` — still water or gentle rain
+- `/public/videos/default.mp4` — night sky / general ambient fallback
+
+No people or figures in any clip (see the PRD's note on imagery). Free, commercially-usable sources to check first: Pexels Videos, Coverr, and Mixkit all have "clouds timelapse," "desert dunes," and "water ripples" categories with no-attribution-required licenses — confirm the specific clip's license before shipping either way.
+
+### Populating real track data
+
+`src/data/trackMap.ts` currently has 2 placeholder entries — none of them match a real video ID from the actual 93-track reciter playlist (`RECITER_PLAYLIST_ID` in `src/lib/constants.ts`), so in production `currentMeta` is almost always `null`. Run:
+
+```bash
+YT_API_KEY=your_key node scripts/build-track-map.mjs > scaffold.ts
+```
+
+(needs a free YouTube Data API v3 key — see the script's header comment for the 2-minute setup) to pull every real video ID + title, then fill in the Arabic text and mood for each by hand against a verified source (Tanzil.net or `api.alquran.cloud`) per the PRD.
 
 ## License
 Private Property of Sukoon Developer.

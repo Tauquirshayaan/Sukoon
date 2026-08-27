@@ -1,0 +1,573 @@
+diff --git a/README.md b/README.md
+index c7e2741..38956ff 100644
+--- a/README.md
++++ b/README.md
+@@ -39,13 +39,33 @@ Sukoon is a carefully curated, zero-friction ambient radio web application desig
+ - `/src/data`: Data maps (e.g. `trackMap.ts` mapping YouTube IDs to Surah metadata)
+ - `sukoonprd.md`: Original Product Requirements Document (PRD)
+ 
+-## Adding Custom Background Videos
++## The mood/vibe system
+ 
+-By default, the app uses beautiful animated CSS mesh gradients as a fallback. To enable the looping video backgrounds (as specified in the PRD), drop your video files into the `/public/videos/` directory:
+-- `/public/videos/dawn.mp4`
+-- `/public/videos/dunes.mp4`
+-- `/public/videos/water.mp4`
+-- `/public/videos/default.mp4`
++Three things were fixed here that were previously silently broken — worth understanding before you touch this again:
++
++1. **`.background-container` / `.background-layer` / `.background-video` had no CSS at all.** They're plain, unstyled divs in `BackgroundVideo.tsx`, so every mood layer collapsed to zero height regardless of whether a video loaded — this was the main reason the "mood" system was invisible. Fixed in `globals.css` (proper `position: absolute; inset: 0`, opacity crossfade on `.active`, a slow Ken Burns zoom for a bit of life even on the gradient fallback).
++2. **The Amiri calligraphy font wasn't actually loading.** `next/font/google`'s `variable: '--font-arabic'` option only exposes a scoped CSS variable — it does not register a global font named "Amiri" the way `globals.css` and `tailwind.config.ts` assumed. Both now reference `var(--font-arabic)`.
++3. **A procedural `MoodCanvas` layer was added** (`src/components/MoodCanvas.tsx`) so the site has real drifting motion — light motes, per-mood color and direction — even before any real video asset exists. It sits between the mood color layer and the legibility scrim, and costs nothing to keep even after real video loops are added.
++
++### Adding real looping video
++
++The app uses animated CSS mesh gradients + the `MoodCanvas` particle layer as the fallback. To layer in real footage, drop 10–20s, seamlessly looping, muted clips into `/public/videos/`:
++- `/public/videos/dawn.mp4` — soft clouds/light breaking, warm gold tones
++- `/public/videos/dunes.mp4` — slow desert dunes at dusk
++- `/public/videos/water.mp4` — still water or gentle rain
++- `/public/videos/default.mp4` — night sky / general ambient fallback
++
++No people or figures in any clip (see the PRD's note on imagery). Free, commercially-usable sources to check first: Pexels Videos, Coverr, and Mixkit all have "clouds timelapse," "desert dunes," and "water ripples" categories with no-attribution-required licenses — confirm the specific clip's license before shipping either way.
++
++### Populating real track data
++
++`src/data/trackMap.ts` currently has 2 placeholder entries — none of them match a real video ID from the actual 93-track reciter playlist (`RECITER_PLAYLIST_ID` in `src/lib/constants.ts`), so in production `currentMeta` is almost always `null`. Run:
++
++```bash
++YT_API_KEY=your_key node scripts/build-track-map.mjs > scaffold.ts
++```
++
++(needs a free YouTube Data API v3 key — see the script's header comment for the 2-minute setup) to pull every real video ID + title, then fill in the Arabic text and mood for each by hand against a verified source (Tanzil.net or `api.alquran.cloud`) per the PRD.
+ 
+ ## License
+ Private Property of Sukoon Developer.
+diff --git a/scripts/build-track-map.mjs b/scripts/build-track-map.mjs
+new file mode 100644
+index 0000000..2013fef
+--- /dev/null
++++ b/scripts/build-track-map.mjs
+@@ -0,0 +1,96 @@
++#!/usr/bin/env node
++/**
++ * Pulls every video (ID + title) out of the reciter playlist via the
++ * official YouTube Data API v3 — read-only metadata, no audio/video is
++ * downloaded — and prints a starter src/data/trackMap.ts entry per video.
++ *
++ * Why this exists: TRACK_MAP currently has 2 placeholder entries, but the
++ * real playlist (see src/lib/constants.ts) has 93 tracks. This script does
++ * the mechanical part (video IDs + titles); a human still has to fill in
++ * surahNameArabic / openingAyahArabic / mood per the PRD, because a Quran
++ * playlist's title text alone can't be safely auto-mapped to verified
++ * mushaf text.
++ *
++ * Setup (~2 minutes, free tier is generous — one call for a 93-video
++ * playlist is a rounding error against the daily quota):
++ *   1. https://console.cloud.google.com/apis/library/youtube.googleapis.com
++ *      -> enable "YouTube Data API v3" on any Google Cloud project
++ *   2. Create an API key under "Credentials"
++ *   3. YT_API_KEY=xxxxx node scripts/build-track-map.mjs > out.txt
++ *
++ * Most playlist titles for a single-reciter Quran playlist already name the
++ * surah (e.g. "Surah Al-Baqarah - Idrees Abkar"), which is usually enough
++ * to hand-fill surahNumber/surahNameArabic/reference quickly — but always
++ * verify the Arabic text itself against Tanzil.net or the AlQuran Cloud API
++ * (https://api.alquran.cloud/v1/), never retype it from a video title.
++ */
++
++const API_KEY = process.env.YT_API_KEY;
++const PLAYLIST_ID = process.env.YT_PLAYLIST_ID || 'PL23vgdbgp7Gf8E-gNd6cdK3Ua2wI_aV03';
++
++if (!API_KEY) {
++  console.error('Missing YT_API_KEY. Set it to a YouTube Data API v3 key and re-run.');
++  console.error('See the header comment in this file for the 2-minute setup.');
++  process.exit(1);
++}
++
++const MOODS = ['dawn', 'dunes', 'water', 'default'];
++
++async function fetchAllItems() {
++  const items = [];
++  let pageToken = '';
++
++  do {
++    const url = new URL('https://www.googleapis.com/youtube/v3/playlistItems');
++    url.searchParams.set('part', 'snippet');
++    url.searchParams.set('maxResults', '50');
++    url.searchParams.set('playlistId', PLAYLIST_ID);
++    url.searchParams.set('key', API_KEY);
++    if (pageToken) url.searchParams.set('pageToken', pageToken);
++
++    const res = await fetch(url);
++    if (!res.ok) {
++      const body = await res.text();
++      throw new Error(`YouTube API error ${res.status}: ${body}`);
++    }
++    const data = await res.json();
++    items.push(...data.items);
++    pageToken = data.nextPageToken || '';
++  } while (pageToken);
++
++  return items;
++}
++
++function escapeForTs(str) {
++  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
++}
++
++async function main() {
++  const items = await fetchAllItems();
++  console.error(`Fetched ${items.length} videos from playlist ${PLAYLIST_ID}.\n`);
++
++  const entries = items.map((item, i) => {
++    const videoId = item.snippet.resourceId.videoId;
++    const title = item.snippet.title;
++    const mood = MOODS[i % (MOODS.length - 1)]; // rotate dawn/dunes/water, skip "default"
++    return `  '${videoId}': {
++    videoId: '${videoId}',
++    surahNumber: 0, // TODO — read from title: "${escapeForTs(title)}"
++    surahNameArabic: '', // TODO — verify against Tanzil.net / AlQuran Cloud API
++    openingAyahArabic: '', // TODO
++    reference: '', // TODO e.g. "2:1-5"
++    mood: '${mood}', // TODO — reassign deliberately once you've picked a real mood map (see PRD §3)
++  },`;
++  });
++
++  console.log('// Auto-generated scaffold — fill in every TODO before use.');
++  console.log('// Source titles are printed as comments to speed up the surah lookup.');
++  console.log('export const TRACK_MAP_SCAFFOLD: Record<string, TrackMeta> = {');
++  console.log(entries.join('\n'));
++  console.log('};');
++}
++
++main().catch((err) => {
++  console.error(err.message);
++  process.exit(1);
++});
+diff --git a/src/app/globals.css b/src/app/globals.css
+index ac8bb36..84f3b13 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -4,8 +4,12 @@
+   --color-background: var(--background);
+   --color-foreground: var(--foreground);
+   --font-inter: "Inter", sans-serif;
+-  --font-amiri: "Amiri", serif;
+-  --font-hindi: "Amiri", serif;
++  /* next/font/google's `variable: '--font-arabic'` option (see layout.tsx) only
++     exposes a scoped custom property — it does NOT register a global "Amiri"
++     family, so referencing the literal string here silently fell back to the
++     browser's default serif. Route through the variable instead. */
++  --font-amiri: var(--font-arabic), "Amiri", serif;
++  --font-hindi: var(--font-arabic), "Amiri", serif;
+   --font-display: "Inter", sans-serif;
+ }
+ 
+@@ -60,6 +64,44 @@
+     animation: meshGradient 20s ease infinite;
+   }
+ 
++  /*
++   * Mood background stack.
++   * These three classes previously had NO rules anywhere in the codebase —
++   * .background-container/.background-layer/.background-video were plain,
++   * unpositioned <div>s, so every mood layer collapsed to near-zero size and
++   * the .active toggle had nothing to animate. That's why the mood system
++   * was invisible regardless of whether /public/videos/*.mp4 existed.
++   */
++  .background-container {
++    position: absolute;
++    inset: 0;
++    z-index: 1;
++    overflow: hidden;
++  }
++  .background-layer {
++    position: absolute;
++    inset: 0;
++    opacity: 0;
++    transform: scale(1.06);
++    transition: opacity 2.4s ease-in-out, transform 12s ease-out;
++    will-change: opacity, transform;
++  }
++  .background-layer.active {
++    opacity: 1;
++    transform: scale(1);
++  }
++  .background-video {
++    width: 100%;
++    height: 100%;
++    object-fit: cover;
++  }
++  @media (prefers-reduced-motion: reduce) {
++    .background-layer {
++      transition: opacity 1.2s ease-in-out;
++      transform: none !important;
++    }
++  }
++
+   /* Typography */
+   .font-hindi {
+     font-family: var(--font-hindi, serif);
+@@ -317,7 +359,7 @@
+   }
+ }
+ 
+-.font-hindi { font-family: 'Amiri', 'serif'; }
++.font-hindi { font-family: var(--font-arabic), 'Amiri', 'serif'; }
+ .font-display { font-family: 'Inter', sans-serif; }
+ 
+ #rainCanvas {
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index a35212b..6da8097 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -10,6 +10,7 @@ import { TRACK_MAP } from '@/data/trackMap';
+ 
+ import CalligraphyCard from '@/components/CalligraphyCard';
+ import BackgroundVideo from '@/components/BackgroundVideo';
++import MoodCanvas from '@/components/MoodCanvas';
+ 
+ function formatTime(s: number) {
+   if (!s || isNaN(s)) return '0:00';
+@@ -143,6 +144,7 @@ export default function Home() {
+   return (
+     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
+       <BackgroundVideo mood={currentMeta?.mood || "default"} />
++      <MoodCanvas mood={currentMeta?.mood || "default"} />
+       <AtmosphereCanvas isActive={isRainActive} />
+       
+       {/* Landing Overlay */}
+diff --git a/src/components/AtmosphereCanvas.tsx b/src/components/AtmosphereCanvas.tsx
+index dc3f3ef..27491e6 100644
+--- a/src/components/AtmosphereCanvas.tsx
++++ b/src/components/AtmosphereCanvas.tsx
+@@ -118,20 +118,17 @@ export default function AtmosphereCanvas({ isActive }: AtmosphereCanvasProps) {
+ 
+   return (
+     <>
+-      {/* Background container */}
+-      <div className="absolute inset-0 z-0">
+-         <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" className="w-full h-full object-cover" role="img" aria-label="Sukoon background">
+-            <defs>
+-              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+-                <stop offset="0%" stopColor="#1a202c" />
+-                <stop offset="100%" stopColor="#2d3748" />
+-              </linearGradient>
+-            </defs>
+-            <rect width="1600" height="900" fill="url(#skyGrad)" />
+-            {/* Can add Islamic geometric patterns here later */}
+-         </svg>
+-         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 pointer-events-none"></div>
+-      </div>
++      {/*
++        This used to own a flat, static navy SVG "sky" plus an 80%-opacity
++        black overlay, painted at z-0. BackgroundVideo now owns the real
++        full-bleed mood background at z-1, so that static layer was both
++        redundant and — because it sat *above* the (previously unstyled,
++        zero-height) mood layers in effect — the reason mood color barely
++        ever read through even once the layout bug above is fixed. This is
++        now just a light legibility scrim above the mood layer, at z-2, and
++        the rain/lightning FX above that.
++      */}
++      <div className="absolute inset-0 z-[3] bg-gradient-to-t from-black/55 via-black/10 to-black/35 pointer-events-none"></div>
+ 
+       <canvas
+         ref={canvasRef}
+diff --git a/src/components/CalligraphyCard.tsx b/src/components/CalligraphyCard.tsx
+index 91dc8ed..151f18d 100644
+--- a/src/components/CalligraphyCard.tsx
++++ b/src/components/CalligraphyCard.tsx
+@@ -26,12 +26,16 @@ export default function CalligraphyCard({ meta, fallbackTitle }: CalligraphyCard
+       );
+     }
+     
+-    // Fallback beautiful display for missing meta
++    // Fallback display for a track not yet in TRACK_MAP. This will be common
++    // until the full playlist is curated (see src/data/trackMap.ts), so it's
++    // styled to match the mapped state — same decorative mark and type
++    // family — rather than reading as a plain, unfinished-looking title card.
+     return (
+-      <div 
++      <div
+         className={`flex flex-col items-center justify-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+       >
+-        <h2 className="text-3xl sm:text-5xl font-serif text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
++        <span className="font-hindi text-3xl text-amber-200/70 mb-3" aria-hidden="true">﷽</span>
++        <h2 className="font-hindi text-3xl sm:text-5xl text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
+           {fallbackTitle}
+         </h2>
+         <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
+diff --git a/src/components/MoodCanvas.tsx b/src/components/MoodCanvas.tsx
+new file mode 100644
+index 0000000..13042c0
+--- /dev/null
++++ b/src/components/MoodCanvas.tsx
+@@ -0,0 +1,210 @@
++"use client";
++
++import React, { useEffect, useRef } from "react";
++
++interface MoodCanvasProps {
++  mood: string;
++}
++
++/**
++ * Guarantees the "video mood" feeling exists even with zero real footage in
++ * /public/videos/. Real mp4 loops (see BackgroundVideo.tsx) are the premium
++ * path when they exist; this is a small procedural layer of drifting light
++ * on top of the mesh-gradient fallback, in the same z-index band (z-2, above
++ * the mood color at z-1, below the legibility scrim at z-3). It reuses the
++ * same canvas + requestAnimationFrame + resize pattern already established
++ * in AtmosphereCanvas.tsx for the rain effect, so the two stay consistent.
++ *
++ * Each mood gets its own drift direction, palette, and particle shape —
++ * these are deliberately subtle (this sits *behind* the calligraphy and
++ * player) rather than a foreground effect like the rain.
++ */
++
++type MoodKey = "dawn" | "dunes" | "water" | "default";
++
++interface MoodConfig {
++  colors: string[];
++  size: [number, number];
++  speed: [number, number];
++  drift: [number, number]; // x, y drift per frame, before per-particle jitter
++  glow: string | null; // optional radial glow color, screen-blended
++  twinkle: boolean;
++}
++
++// Every mood shares one particle count (below) — only palette, motion, and
++// glow differ, which is what actually reads as a distinct "mood" without
++// needing to re-allocate the particle pool when the track (and therefore
++// the mood) changes.
++const MOODS: Record<MoodKey, MoodConfig> = {
++  dawn: {
++    colors: ["#f3d9a4", "#f8c97a", "#ffe9c2"],
++    size: [1, 3],
++    speed: [0.12, 0.3],
++    drift: [0.02, -0.18], // motes rise, like warm light
++    glow: "rgba(248, 201, 122, 0.16)",
++    twinkle: true,
++  },
++  dunes: {
++    colors: ["#e8a765", "#c97a3f", "#f2c48a"],
++    size: [1, 2.4],
++    speed: [0.06, 0.16],
++    drift: [-0.22, 0.01], // heat-haze drift, mostly horizontal
++    glow: "rgba(201, 122, 63, 0.14)",
++    twinkle: false,
++  },
++  water: {
++    colors: ["#bfe3e0", "#8fc9c4", "#e7f6f3"],
++    size: [1, 2.6],
++    speed: [0.08, 0.2],
++    drift: [0.05, 0.14], // light drifting down through water
++    glow: "rgba(143, 201, 196, 0.14)",
++    twinkle: true,
++  },
++  default: {
++    colors: ["#cfcac0", "#e7e2d6"],
++    size: [1, 2],
++    speed: [0.05, 0.12],
++    drift: [0, -0.05],
++    glow: null,
++    twinkle: false,
++  },
++};
++
++const PARTICLE_COUNT = 60;
++
++export default function MoodCanvas({ mood }: MoodCanvasProps) {
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const moodRef = useRef<MoodKey>("default");
++
++  useEffect(() => {
++    moodRef.current = (mood in MOODS ? mood : "default") as MoodKey;
++  }, [mood]);
++
++  useEffect(() => {
++    const canvas = canvasRef.current;
++    if (!canvas) return;
++    const ctx = canvas.getContext("2d");
++    if (!ctx) return;
++
++    const reduceMotion = window.matchMedia(
++      "(prefers-reduced-motion: reduce)"
++    ).matches;
++
++    let width = window.innerWidth;
++    let height = window.innerHeight;
++    canvas.width = width;
++    canvas.height = height;
++
++    const handleResize = () => {
++      width = window.innerWidth;
++      height = window.innerHeight;
++      canvas.width = width;
++      canvas.height = height;
++    };
++    window.addEventListener("resize", handleResize);
++
++    class Mote {
++      x = 0;
++      y = 0;
++      r = 0;
++      color = "#fff";
++      speed = 0;
++      angle = 0;
++      phase = Math.random() * Math.PI * 2;
++
++      reset() {
++        const cfg = MOODS[moodRef.current];
++        this.x = Math.random() * width;
++        this.y = Math.random() * height;
++        this.r = cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0]);
++        this.color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
++        this.speed = cfg.speed[0] + Math.random() * (cfg.speed[1] - cfg.speed[0]);
++        this.angle = Math.random() * Math.PI * 2;
++      }
++
++      update() {
++        const cfg = MOODS[moodRef.current];
++        this.x += cfg.drift[0] + Math.cos(this.angle) * this.speed * 0.4;
++        this.y += cfg.drift[1] + Math.sin(this.angle) * this.speed * 0.4;
++        this.phase += 0.01;
++
++        if (this.x < -20) this.x = width + 20;
++        if (this.x > width + 20) this.x = -20;
++        if (this.y < -20) this.y = height + 20;
++        if (this.y > height + 20) this.y = -20;
++      }
++
++      draw() {
++        if (!ctx) return;
++        const cfg = MOODS[moodRef.current];
++        const alpha = cfg.twinkle ? 0.35 + Math.sin(this.phase) * 0.25 : 0.4;
++        ctx.beginPath();
++        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
++        ctx.fillStyle = this.color;
++        ctx.globalAlpha = Math.max(0.05, alpha);
++        ctx.fill();
++        ctx.globalAlpha = 1;
++      }
++    }
++
++    const motes = Array.from({ length: PARTICLE_COUNT }, () => {
++      const m = new Mote();
++      m.reset();
++      return m;
++    });
++
++    let animFrameId: number;
++
++    function paintGlow() {
++      if (!ctx) return;
++      const cfg = MOODS[moodRef.current];
++      if (!cfg.glow) return;
++      const prevOp = ctx.globalCompositeOperation;
++      ctx.globalCompositeOperation = "screen";
++      const grad = ctx.createRadialGradient(
++        width * 0.5,
++        height * 0.35,
++        0,
++        width * 0.5,
++        height * 0.35,
++        Math.max(width, height) * 0.6
++      );
++      grad.addColorStop(0, cfg.glow);
++      grad.addColorStop(1, "rgba(0,0,0,0)");
++      ctx.fillStyle = grad;
++      ctx.fillRect(0, 0, width, height);
++      ctx.globalCompositeOperation = prevOp;
++    }
++
++    function frame() {
++      ctx!.clearRect(0, 0, width, height);
++      paintGlow();
++      for (const m of motes) {
++        m.update();
++        m.draw();
++      }
++      animFrameId = requestAnimationFrame(frame);
++    }
++
++    if (reduceMotion) {
++      // Paint a single static frame instead of animating.
++      motes.forEach((m) => m.draw());
++      paintGlow();
++    } else {
++      frame();
++    }
++
++    return () => {
++      window.removeEventListener("resize", handleResize);
++      cancelAnimationFrame(animFrameId);
++    };
++  }, []);
++
++  return (
++    <canvas
++      ref={canvasRef}
++      className="absolute inset-0 z-[2] pointer-events-none"
++      aria-hidden="true"
++    />
++  );
++}
+diff --git a/src/data/trackMap.ts b/src/data/trackMap.ts
+index f89ec5e..ec05a09 100644
+--- a/src/data/trackMap.ts
++++ b/src/data/trackMap.ts
+@@ -7,30 +7,40 @@ export interface TrackMeta {
+   mood: string;
+ }
+ 
+-// TODO: Replace with the actual hand-curated map once provided by the user.
++// STATUS: placeholder data only — none of these video IDs belong to the real
++// RECITER_PLAYLIST_ID (src/lib/constants.ts, the 93-track Idrees Abkar
++// playlist). That means in production, currentMeta is almost always null:
++// CalligraphyCard falls back to the raw YouTube title, and the mood is
++// always "default" — which is most of why the site currently feels flat.
++//
++// Run `node scripts/build-track-map.mjs` (needs a free YouTube Data API v3
++// key — see that file's header comment) to pull every real video ID + title
++// from the playlist and scaffold real entries below. The script can't infer
++// surahNameArabic/openingAyahArabic/mood on its own — a Quran playlist's
++// video titles almost always name the surah, so fill those three fields in
++// by hand per PRD §3 ("this content work is done once, by someone who's
++// read the surahs — not automated").
++//
++// The previous placeholder here mapped a real, unrelated YouTube video ID
++// to Al-Fatiha — harmless as a mock, but a genuinely bad thing to ship by
++// accident (a random video mislabeled as Qur'an recitation). Deliberately
++// non-ID-shaped keys below (real IDs are always 11 chars) so a leftover
++// entry can never silently match a real video.
+ export const TRACK_MAP: Record<string, TrackMeta> = {
+-  'mock_vid_1': {
+-    videoId: 'mock_vid_1',
++  'REPLACE_WITH_REAL_ID_1': {
++    videoId: 'REPLACE_WITH_REAL_ID_1',
+     surahNumber: 55,
+     surahNameArabic: 'الرحمن',
+     openingAyahArabic: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ٱلرَّحْمَٰنُ عَلَّمَ ٱلْقُرْءَانَ خَلَقَ ٱلْإِنسَٰنَ',
+     reference: '55:1-3',
+     mood: 'dawn'
+   },
+-  'mock_vid_2': {
+-    videoId: 'mock_vid_2',
++  'REPLACE_WITH_REAL_ID_2': {
++    videoId: 'REPLACE_WITH_REAL_ID_2',
+     surahNumber: 67,
+     surahNameArabic: 'الملك',
+     openingAyahArabic: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ تَبَٰرَكَ ٱلَّذِى بِيَدِهِ ٱلْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَىْءٍ قَدِيرٌ',
+     reference: '67:1',
+     mood: 'dunes'
+   },
+-  'dQw4w9WgXcQ': {
+-    videoId: 'dQw4w9WgXcQ',
+-    surahNumber: 1,
+-    surahNameArabic: 'الفاتحة',
+-    openingAyahArabic: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
+-    reference: '1:1',
+-    mood: 'water'
+-  }
+ };

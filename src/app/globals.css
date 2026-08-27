@@ -4,8 +4,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-inter: "Inter", sans-serif;
-  --font-amiri: "Amiri", serif;
-  --font-hindi: "Amiri", serif;
+  /* next/font/google's `variable: '--font-arabic'` option (see layout.tsx) only
+     exposes a scoped custom property — it does NOT register a global "Amiri"
+     family, so referencing the literal string here silently fell back to the
+     browser's default serif. Route through the variable instead. */
+  --font-amiri: var(--font-arabic), "Amiri", serif;
+  --font-hindi: var(--font-arabic), "Amiri", serif;
   --font-display: "Inter", sans-serif;
 }
 
@@ -58,6 +62,44 @@
     background: linear-gradient(-45deg, #18181b, #09090b, #171717, #0a0a0a);
     background-size: 400% 400%;
     animation: meshGradient 20s ease infinite;
+  }
+
+  /*
+   * Mood background stack.
+   * These three classes previously had NO rules anywhere in the codebase —
+   * .background-container/.background-layer/.background-video were plain,
+   * unpositioned <div>s, so every mood layer collapsed to near-zero size and
+   * the .active toggle had nothing to animate. That's why the mood system
+   * was invisible regardless of whether /public/videos/*.mp4 existed.
+   */
+  .background-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .background-layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 2.4s ease-in-out, transform 12s ease-out;
+    will-change: opacity, transform;
+  }
+  .background-layer.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .background-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .background-layer {
+      transition: opacity 1.2s ease-in-out;
+      transform: none !important;
+    }
   }
 
   /* Typography */
@@ -317,7 +359,7 @@
   }
 }
 
-.font-hindi { font-family: 'Amiri', 'serif'; }
+.font-hindi { font-family: var(--font-arabic), 'Amiri', 'serif'; }
 .font-display { font-family: 'Inter', sans-serif; }
 
 #rainCanvas {

@@ -10,6 +10,7 @@ import { TRACK_MAP } from '@/data/trackMap';
 
 import CalligraphyCard from '@/components/CalligraphyCard';
 import BackgroundVideo from '@/components/BackgroundVideo';
+import MoodCanvas from '@/components/MoodCanvas';
 
 function formatTime(s: number) {
   if (!s || isNaN(s)) return '0:00';
@@ -143,6 +144,7 @@ export default function Home() {
   return (
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
       <BackgroundVideo mood={currentMeta?.mood || "default"} />
+      <MoodCanvas mood={currentMeta?.mood || "default"} />
       <AtmosphereCanvas isActive={isRainActive} />
       
       {/* Landing Overlay */}

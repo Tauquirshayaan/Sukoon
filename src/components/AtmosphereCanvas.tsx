@@ -118,20 +118,17 @@ export default function AtmosphereCanvas({ isActive }: AtmosphereCanvasProps) {
 
   return (
     <>
-      {/* Background container */}
-      <div className="absolute inset-0 z-0">
-         <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" className="w-full h-full object-cover" role="img" aria-label="Sukoon background">
-            <defs>
-              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#1a202c" />
-                <stop offset="100%" stopColor="#2d3748" />
-              </linearGradient>
-            </defs>
-            <rect width="1600" height="900" fill="url(#skyGrad)" />
-            {/* Can add Islamic geometric patterns here later */}
-         </svg>
-         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 pointer-events-none"></div>
-      </div>
+      {/*
+        This used to own a flat, static navy SVG "sky" plus an 80%-opacity
+        black overlay, painted at z-0. BackgroundVideo now owns the real
+        full-bleed mood background at z-1, so that static layer was both
+        redundant and — because it sat *above* the (previously unstyled,
+        zero-height) mood layers in effect — the reason mood color barely
+        ever read through even once the layout bug above is fixed. This is
+        now just a light legibility scrim above the mood layer, at z-2, and
+        the rain/lightning FX above that.
+      */}
+      <div className="absolute inset-0 z-[3] bg-gradient-to-t from-black/55 via-black/10 to-black/35 pointer-events-none"></div>
 
       <canvas
         ref={canvasRef}

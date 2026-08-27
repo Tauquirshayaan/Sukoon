@@ -26,12 +26,16 @@ export default function CalligraphyCard({ meta, fallbackTitle }: CalligraphyCard
       );
     }
     
-    // Fallback beautiful display for missing meta
+    // Fallback display for a track not yet in TRACK_MAP. This will be common
+    // until the full playlist is curated (see src/data/trackMap.ts), so it's
+    // styled to match the mapped state — same decorative mark and type
+    // family — rather than reading as a plain, unfinished-looking title card.
     return (
-      <div 
+      <div
         className={`flex flex-col items-center justify-center transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       >
-        <h2 className="text-3xl sm:text-5xl font-serif text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
+        <span className="font-hindi text-3xl text-amber-200/70 mb-3" aria-hidden="true">﷽</span>
+        <h2 className="font-hindi text-3xl sm:text-5xl text-white/95 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] mb-4 text-center px-4 max-w-2xl leading-snug">
           {fallbackTitle}
         </h2>
         <span className="text-white/50 text-xs sm:text-sm font-mono tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
