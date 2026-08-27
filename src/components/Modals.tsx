@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { ref, onValue, push, set, query, orderByChild, limitToLast } from "firebase/database";
 import { db } from "../lib/firebase";
-import { filterProfanity } from "../lib/profanityFilter";
+import { cleanMessage } from "../lib/profanityFilter";
 
 interface ChatMessage {
   id: string;
@@ -112,7 +112,7 @@ export default function Modals() {
     setIsLoading(true);
     
     try {
-      const cleanText = filterProfanity(inputText.trim());
+      const cleanText = cleanMessage(inputText.trim());
       
       const messagesRef = ref(db, 'chatMessages');
       const newMessageRef = push(messagesRef);
