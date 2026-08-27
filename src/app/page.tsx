@@ -17,7 +17,7 @@ import FocusPanel from '@/components/FocusPanel';
 import { resolveMoodFromTitle } from '@/lib/moodMatch';
 import { MoodKey, SURAH_MOODS } from '@/data/surahMoods';
 import { EffectKey, resolveAutoEffect } from '@/data/effects';
-import { getFamousVerseForSurah } from '@/data/famousVerses';
+import { getFamousVersesForSurah } from '@/data/famousVerses';
 
 function formatTime(s: number) {
   if (!s || isNaN(s)) return '0:00';
@@ -171,8 +171,8 @@ export default function Home() {
   const autoEffect: EffectKey = resolveAutoEffect(effectiveMood);
   const effectiveEffect: EffectKey = manualEffect ?? autoEffect;
 
-  // Focus panel context: which surah is this, and does it have a curated
-  // famous verse (src/data/famousVerses.ts)? A hand-curated TRACK_MAP entry
+  // Focus panel context: which surah is this, and does it have any curated
+  // popular verses (src/data/famousVerses.ts)? A hand-curated TRACK_MAP entry
   // is the most precise source when it exists; otherwise this falls back
   // to the same title-based surah guess already used for the mood above,
   // so the panel still has *something* to show for the ~90+ tracks not
@@ -182,7 +182,7 @@ export default function Home() {
   const activeSurahNameArabic: string | null = currentMeta?.surahNameArabic ?? activeSurahEntry?.arabicName ?? null;
   const activeSurahNameEnglish: string | null = activeSurahEntry?.name ?? null;
   const activeReference: string | null = currentMeta?.reference ?? null;
-  const famousVerse = getFamousVerseForSurah(activeSurahNumber);
+  const famousVerses = getFamousVersesForSurah(activeSurahNumber);
 
   return (
     <section className="relative w-full h-[100svh] overflow-hidden select-none bg-[#120806]">
@@ -298,7 +298,7 @@ export default function Home() {
         surahNameArabic={activeSurahNameArabic}
         surahNameEnglish={activeSurahNameEnglish}
         reference={activeReference}
-        famousVerse={famousVerse}
+        famousVerses={famousVerses}
       />
 
       <YouTubePlayer

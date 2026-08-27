@@ -10,7 +10,7 @@ interface FocusPanelProps {
   surahNameArabic: string | null;
   surahNameEnglish: string | null;
   reference: string | null;
-  famousVerse: FamousVerse | null;
+  famousVerses: FamousVerse[];
 }
 
 /**
@@ -28,7 +28,7 @@ export default function FocusPanel({
   surahNameArabic,
   surahNameEnglish,
   reference,
-  famousVerse,
+  famousVerses,
 }: FocusPanelProps) {
   if (!isOpen) return null;
 
@@ -66,22 +66,28 @@ export default function FocusPanel({
           )}
         </div>
 
-        {famousVerse && (
+        {famousVerses.length > 0 && (
           <div className="focus-sheet-verse">
-            <div className="focus-sheet-verse-label">A verse from this surah</div>
-            {famousVerse.arabicLines.map((line, i) => (
-              <p key={i} className="font-hindi focus-sheet-arabic" dir="rtl">
-                {line}
-              </p>
-            ))}
-            {famousVerse.glossLines.map((line, i) => (
-              <p key={i} className="focus-sheet-gloss">
-                {line}
-              </p>
-            ))}
-            <div className="focus-sheet-credit">
-              {famousVerse.reference} — {famousVerse.translationSource}
+            <div className="focus-sheet-verse-label">
+              {famousVerses.length > 1 ? "Popular verses from this surah" : "A popular verse from this surah"}
             </div>
+            {famousVerses.map((verse, vi) => (
+              <div key={verse.reference} className={vi > 0 ? "focus-sheet-verse-item" : undefined}>
+                {verse.arabicLines.map((line, i) => (
+                  <p key={i} className="font-hindi focus-sheet-arabic" dir="rtl">
+                    {line}
+                  </p>
+                ))}
+                {verse.glossLines.map((line, i) => (
+                  <p key={i} className="focus-sheet-gloss">
+                    {line}
+                  </p>
+                ))}
+                <div className="focus-sheet-credit">
+                  {verse.reference} — {verse.translationSource}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

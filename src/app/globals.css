@@ -452,6 +452,11 @@
     color: rgba(255, 255, 255, 0.35);
     margin-top: 8px;
   }
+  .focus-sheet-verse-item {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
   .focus-sheet-link {
     display: inline-block;
     margin-top: 18px;
