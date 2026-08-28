@@ -358,6 +358,9 @@ export default function Home() {
           Cenovabuild
         </a>
       </p>
+      <p className="text-white/30 text-[9px] sm:text-[10px] mt-4 max-w-2xl mx-auto leading-relaxed">
+        Disclaimer: Audio plays through YouTube’s embedded player. Nothing is hosted on this site, and all rights stay with the labels, composers and reciter.
+      </p>
     </footer>
     </>
   );
