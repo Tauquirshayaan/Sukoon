@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 const amiri = Amiri({ weight: ["400", "700"], subsets: ["arabic"], variable: '--font-arabic' });
 
-const SITE_URL = "https://sukoon.vercel.app";
+const SITE_URL = "https://www.sukoon.click";
 const SITE_TITLE = "Sukoon — Play Quran Online Free | Ambient Qur'an Radio";
 const SITE_DESCRIPTION =
   "Listen to Quran online free with Sukoon — a distraction-free ambient Quran radio. No sign-up, no ads. Play beautiful recitations blended with calming rain, night sky, and desert-wind atmospheres.";
@@ -44,11 +44,20 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Sukoon — Ambient Qur'an Radio",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
   },
 };
 
